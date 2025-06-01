@@ -26,56 +26,51 @@
 #include <npp.h>
 #include <nppi.h>
 
-
 // cudaBayerToRGB
-cudaError_t cudaBayerToRGB( uint8_t* input, uchar3* output, size_t width, size_t height, imageFormat format, cudaStream_t stream )
-{
-	NppiSize size;
-	size.width = width;
-	size.height = height;
-	
-	NppiRect roi;
-	roi.x = 0;
-	roi.y = 0;
-	roi.width = width;
-	roi.height = height;
-	
-	NppiBayerGridPosition grid;
-	
-	if( format == IMAGE_BAYER_BGGR )
-		grid = NPPI_BAYER_BGGR;
-	else if( format == IMAGE_BAYER_GBRG )
-		grid = NPPI_BAYER_GBRG;
-	else if( format == IMAGE_BAYER_GRBG )
-		grid = NPPI_BAYER_GRBG;
-	else if( format == IMAGE_BAYER_RGGB )
-		grid = NPPI_BAYER_RGGB;
-	else
-		return cudaErrorInvalidValue;
-	
-	NppStreamContext nppStreamContext;
-	nppGetStreamContext(&nppStreamContext);
-	nppStreamContext.hStream = stream;
-	
-	const NppStatus result = nppiCFAToRGB_8u_C1C3R_Ctx(input, width * sizeof(uint8_t), size, roi, 
-												       (uint8_t*)output, width * sizeof(uchar3),
-												       grid, NPPI_INTER_UNDEFINED, nppStreamContext);
-	
-	if( result != 0 )
-	{
-		LogError(LOG_CUDA "cudaBayerToRGB() NPP error %i\n", result);
-		return cudaErrorUnknown;
-	}
-	
-	return cudaSuccess;
+cudaError_t cudaBayerToRGB(uint8_t *input, uchar3 *output, size_t width,
+                           size_t height, imageFormat format,
+                           cudaStream_t stream) {
+  NppiSize size;
+  size.width = width;
+  size.height = height;
+
+  NppiRect roi;
+  roi.x = 0;
+  roi.y = 0;
+  roi.width = width;
+  roi.height = height;
+
+  NppiBayerGridPosition grid;
+
+  if (format == IMAGE_BAYER_BGGR)
+    grid = NPPI_BAYER_BGGR;
+  else if (format == IMAGE_BAYER_GBRG)
+    grid = NPPI_BAYER_GBRG;
+  else if (format == IMAGE_BAYER_GRBG)
+    grid = NPPI_BAYER_GRBG;
+  else if (format == IMAGE_BAYER_RGGB)
+    grid = NPPI_BAYER_RGGB;
+  else
+    return cudaErrorInvalidValue;
+
+  NppStreamContext nppStreamContext;
+  nppGetStreamContext(&nppStreamContext);
+  nppStreamContext.hStream = stream;
+
+  const NppStatus result = nppiCFAToRGB_8u_C1C3R_Ctx(
+      input, width * sizeof(uint8_t), size, roi, (uint8_t *)output,
+      width * sizeof(uchar3), grid, NPPI_INTER_UNDEFINED, nppStreamContext);
+
+  if (result != 0) {
+    LogError(LOG_CUDA "cudaBayerToRGB() NPP error %i\n", result);
+    return cudaErrorUnknown;
+  }
+
+  return cudaSuccess;
 }
 
-
-cudaError_t cudaBayerToRGBA( uint8_t* input, uchar3* output, size_t width, size_t height, imageFormat format, cudaStream_t stream )
-{
-	return cudaErrorInvalidValue;
-	
+cudaError_t cudaBayerToRGBA(uint8_t *input, uchar3 *output, size_t width,
+                            size_t height, imageFormat format,
+                            cudaStream_t stream) {
+  return cudaErrorInvalidValue;
 }
-
-
-

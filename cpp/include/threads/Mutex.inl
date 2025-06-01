@@ -23,54 +23,28 @@
 #ifndef __MULTITHREAD_MUTEX_INLINE_H
 #define __MULTITHREAD_MUTEX_INLINE_H
 
-
 // constructor
-inline Mutex::Mutex()
-{
-	pthread_mutex_init(&mID, NULL);
-}
-
+inline Mutex::Mutex() { pthread_mutex_init(&mID, NULL); }
 
 // destructor
-inline Mutex::~Mutex()
-{
-	pthread_mutex_destroy(&mID);
-}
-
+inline Mutex::~Mutex() { pthread_mutex_destroy(&mID); }
 
 // AttemptLock
-inline bool Mutex::AttemptLock()					
-{ 
-	return (pthread_mutex_trylock(&mID) == 0); 
-}
-	
+inline bool Mutex::AttemptLock() { return (pthread_mutex_trylock(&mID) == 0); }
 
 // Lock
-inline void Mutex::Lock()							
-{ 
-	pthread_mutex_lock(&mID); 
-}
-
+inline void Mutex::Lock() { pthread_mutex_lock(&mID); }
 
 // Unlock
-inline void Mutex::Unlock()
-{ 
-	pthread_mutex_unlock(&mID); 
-}		
-
+inline void Mutex::Unlock() { pthread_mutex_unlock(&mID); }
 
 // Sync
-inline void Mutex::Sync()							
-{ 
-	Lock(); 
-	Unlock(); 
+inline void Mutex::Sync() {
+  Lock();
+  Unlock();
 }
-
 
 // GetID
-inline pthread_mutex_t* Mutex::GetID()
-{ 
-	return &mID; 
-}
-	
+inline pthread_mutex_t *Mutex::GetID() { return &mID; }
+
 #endif

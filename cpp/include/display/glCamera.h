@@ -19,192 +19,203 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __GL_CAMERA_H__
 #define __GL_CAMERA_H__
-
 
 #include <stdint.h>
 #include <stdio.h>
 
-
 /**
- * OpenGL perspective camera supporting Look-At, Yaw/Pitch/Roll, and Ortho modes.
+ * OpenGL perspective camera supporting Look-At, Yaw/Pitch/Roll, and Ortho
+ * modes.
  * @ingroup OpenGL
  */
-class glCamera
-{
+class glCamera {
 public:
-	/**
-	 * Enum specifying the camera mode
-	 */
-	enum CameraMode
-	{
-		LookAt,		/**< LookAt (orbit) */
-		YawPitchRoll,	/**< YawPitchRoll (first person */
-		Ortho		/**< Ortho (2D) */
-	};
-	
-	/**
-	 * Create OpenGL camera object with the specified CameraMode
-	 *
-	 * @param registerEvents the ID of the glDisplay window
-	 *        to register with to recieve input events (for
-	 *        moving the camera around with keyboard/mouse),
-	 *        or -1 to not register for input events.
-	 */
-	static glCamera* Create( CameraMode mode, int registerEvents=0 );
+  /**
+   * Enum specifying the camera mode
+   */
+  enum CameraMode {
+    LookAt,       /**< LookAt (orbit) */
+    YawPitchRoll, /**< YawPitchRoll (first person */
+    Ortho         /**< Ortho (2D) */
+  };
 
-	/**
-	 * Create OpenGL camera object
-	 *
-	 * @param registerEvents the ID of the glDisplay window
-	 *        to register with to recieve input events (for
-	 *        moving the camera around with keyboard/mouse),
-	 *        or -1 to not register for input events.
-	 */
-	static glCamera* Create( int registerEvents=0 );
+  /**
+   * Create OpenGL camera object with the specified CameraMode
+   *
+   * @param registerEvents the ID of the glDisplay window
+   *        to register with to recieve input events (for
+   *        moving the camera around with keyboard/mouse),
+   *        or -1 to not register for input events.
+   */
+  static glCamera *Create(CameraMode mode, int registerEvents = 0);
 
-	/**
-	 * Free the camera
-	 */
-	~glCamera();
-	
-	/**
-	 * Activate GL_PROJECTION and GL_MODELVIEW matrices
-	 */
-	void Activate();
+  /**
+   * Create OpenGL camera object
+   *
+   * @param registerEvents the ID of the glDisplay window
+   *        to register with to recieve input events (for
+   *        moving the camera around with keyboard/mouse),
+   *        or -1 to not register for input events.
+   */
+  static glCamera *Create(int registerEvents = 0);
 
-	/**
-	 * Activate GL_PROJECTION and GL_MODELVIEW matrices
-	 */
-	void Activate( CameraMode mode );
+  /**
+   * Free the camera
+   */
+  ~glCamera();
 
-	/**
-	 * Restore previous GL_PROJECTION and GL_MODELVIEW matrices
-	 */
-	void Deactivate();
+  /**
+   * Activate GL_PROJECTION and GL_MODELVIEW matrices
+   */
+  void Activate();
 
-	/**
-	 * Get the camera mode
-	 */
-	inline CameraMode GetCameraMode() const						{ return mMode; }
+  /**
+   * Activate GL_PROJECTION and GL_MODELVIEW matrices
+   */
+  void Activate(CameraMode mode);
 
-	/**
-	 * Set the camera mode
-	 */
-	inline void SetCameraMode( CameraMode mode )					{ mMode = mode; }
+  /**
+   * Restore previous GL_PROJECTION and GL_MODELVIEW matrices
+   */
+  void Deactivate();
 
-	/**
-	 * Set the field of view (FOV), in degrees
-	 */
-	inline void SetFOV( float fov )							{ mFoV = fov; }
+  /**
+   * Get the camera mode
+   */
+  inline CameraMode GetCameraMode() const { return mMode; }
 
-	/**
- 	 * Set the near/far z-clipping plane
-	 */
-	inline void SetClippingPlane( float near, float far )			{ mNear = near; mFar = far; }
+  /**
+   * Set the camera mode
+   */
+  inline void SetCameraMode(CameraMode mode) { mMode = mode; }
 
-	/**
-	 * Set the distance to the near clipping plane
-	 */
-	inline void SetNear( float near )							{ mNear = near; }
+  /**
+   * Set the field of view (FOV), in degrees
+   */
+  inline void SetFOV(float fov) { mFoV = fov; }
 
-	/**
-	 * Set the distance to the far clipping plane
-	 */
-	inline void SetFar( float far )							{ mFar = far; }
+  /**
+   * Set the near/far z-clipping plane
+   */
+  inline void SetClippingPlane(float near, float far) {
+    mNear = near;
+    mFar = far;
+  }
 
-	/**
-	 * Set the eye position
-	 */
-	inline void SetEye( float x, float y, float z )				{ mEye[0] = x; mEye[1] = y; mEye[2] = z; }
+  /**
+   * Set the distance to the near clipping plane
+   */
+  inline void SetNear(float near) { mNear = near; }
 
-	/**
-	 * Set the look-at point
-	 */
-	inline void SetLookAt( float x, float y, float z )			{ mLookAt[0] = x; mLookAt[1] = y; mLookAt[2] = z; }
+  /**
+   * Set the distance to the far clipping plane
+   */
+  inline void SetFar(float far) { mFar = far; }
 
-	/**
-	 * Set the yaw/pitch/roll angles, in radians
-	 */
-	inline void SetRotation( float yaw, float pitch, float roll )	{ mRotation[0] = pitch; mRotation[1] = yaw; mRotation[2] = roll; }
+  /**
+   * Set the eye position
+   */
+  inline void SetEye(float x, float y, float z) {
+    mEye[0] = x;
+    mEye[1] = y;
+    mEye[2] = z;
+  }
 
-	/**
-	 * Set the yaw angle, in radians
-	 */
-	inline void SetYaw( float yaw )							{ mRotation[1] = yaw; }
+  /**
+   * Set the look-at point
+   */
+  inline void SetLookAt(float x, float y, float z) {
+    mLookAt[0] = x;
+    mLookAt[1] = y;
+    mLookAt[2] = z;
+  }
 
-	/**
-	 * Set the pitch angle, in radians
-	 */
-	inline void SetPitch( float pitch )						{ mRotation[0] = pitch; }
+  /**
+   * Set the yaw/pitch/roll angles, in radians
+   */
+  inline void SetRotation(float yaw, float pitch, float roll) {
+    mRotation[0] = pitch;
+    mRotation[1] = yaw;
+    mRotation[2] = roll;
+  }
 
-	/**
- 	 * Set the roll angle, in radians
-	 */
-	inline void SetRoll( float roll )							{ mRotation[2] = roll; }
+  /**
+   * Set the yaw angle, in radians
+   */
+  inline void SetYaw(float yaw) { mRotation[1] = yaw; }
 
-	/**
-	 * Set the movement speed (in world units)
-	 */
-	inline void SetMovementSpeed( float speed )					{ mMovementSpeed = speed; }
+  /**
+   * Set the pitch angle, in radians
+   */
+  inline void SetPitch(float pitch) { mRotation[0] = pitch; }
 
-	/**
-	 * Enable or disable movement from user input
-	 */
-	inline void SetMovementEnabled( bool enabled )				{ mMovementEnabled = enabled; }
+  /**
+   * Set the roll angle, in radians
+   */
+  inline void SetRoll(float roll) { mRotation[2] = roll; }
 
-	/**
-	 * Store the current configuration as defaults
-	 */
-	void StoreDefaults();
+  /**
+   * Set the movement speed (in world units)
+   */
+  inline void SetMovementSpeed(float speed) { mMovementSpeed = speed; }
 
-	/**
-	 * Reset camera orientation to defaults
-	 */
-	void Reset();
+  /**
+   * Enable or disable movement from user input
+   */
+  inline void SetMovementEnabled(bool enabled) { mMovementEnabled = enabled; }
 
-	/**
-	 * Register to recieve input events (enable movement)
-	 */
-	void RegisterEvents( uint32_t display=0 );
-	
+  /**
+   * Store the current configuration as defaults
+   */
+  void StoreDefaults();
+
+  /**
+   * Reset camera orientation to defaults
+   */
+  void Reset();
+
+  /**
+   * Register to recieve input events (enable movement)
+   */
+  void RegisterEvents(uint32_t display = 0);
+
 private:
-	glCamera( CameraMode mode );
+  glCamera(CameraMode mode);
 
-	bool mouseInViewport() const;
+  bool mouseInViewport() const;
 
-	bool onEventLookAt( uint16_t msg, int a, int b );
-	bool onEventYawPitchRoll( uint16_t msg, int a, int b );
+  bool onEventLookAt(uint16_t msg, int a, int b);
+  bool onEventYawPitchRoll(uint16_t msg, int a, int b);
 
-	static bool onEvent( uint16_t msg, int a, int b, void* user );
+  static bool onEvent(uint16_t msg, int a, int b, void *user);
 
-	CameraMode mMode;
+  CameraMode mMode;
 
-	float mNear;
-	float mFar;
-	float mFoV;
+  float mNear;
+  float mFar;
+  float mFoV;
 
-	float mEye[3];		// camera location
-	float mRotation[3];	// pitch/yaw/roll euler angles
-	float mLookAt[3];	// look-at point
-	float mUp[3];		// up direction
+  float mEye[3];      // camera location
+  float mRotation[3]; // pitch/yaw/roll euler angles
+  float mLookAt[3];   // look-at point
+  float mUp[3];       // up direction
 
-	float mDefaultEye[3];
-	float mDefaultRotation[3];
-	float mDefaultLookAt[3];
+  float mDefaultEye[3];
+  float mDefaultRotation[3];
+  float mDefaultLookAt[3];
 
-	float mPrevModelView[16];
-	float mPrevProjection[16];
+  float mPrevModelView[16];
+  float mPrevProjection[16];
 
-	float mMovementSpeed;
-	bool  mMovementEnabled;
-	
-	void* mDisplay;
-	int   mViewport[4];
-	bool  mMouseActive;
+  float mMovementSpeed;
+  bool mMovementEnabled;
+
+  void *mDisplay;
+  int mViewport[4];
+  bool mMouseActive;
 };
 
 #endif
-

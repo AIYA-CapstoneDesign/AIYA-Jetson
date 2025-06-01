@@ -19,43 +19,41 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __RANDOM_UTILS_H_
 #define __RANDOM_UTILS_H_
 
-
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <time.h>
-
 
 /**
  * Generate a floating-point random number within the specified range.
  * @ingroup util
  */
-inline float randf( float range_min=0.0f, float range_max=1.0f )		{ return ((float(rand()) / RAND_MAX) * (range_max - range_min)) + range_min; }
-
+inline float randf(float range_min = 0.0f, float range_max = 1.0f) {
+  return ((float(rand()) / RAND_MAX) * (range_max - range_min)) + range_min;
+}
 
 /**
  * Generate a random integer within the specified range.
  * @ingroup util
  */
-inline int rand( int range_min, int range_max )							{ const float r = (randf() * (range_max - range_min)) + range_min; return int(r); }
-
+inline int rand(int range_min, int range_max) {
+  const float r = (randf() * (range_max - range_min)) + range_min;
+  return int(r);
+}
 
 /**
  * Seed the random number generator based on the system time.
  * @ingroup util
  */
-inline void srand_time()												{ srand(time(NULL)); }
-
+inline void srand_time() { srand(time(NULL)); }
 
 /**
  * Seed the random number generator from an unsigned integer value
  * (this standard function implemented by `stdlib.h`)
  * @ingroup util
  */
-//void srand( unsigned int seed );
-
+// void srand( unsigned int seed );
 
 #endif
-

@@ -23,41 +23,51 @@
 #ifndef __CUDA_COLORMAP_H__
 #define __CUDA_COLORMAP_H__
 
-
 #include "cudaFilterMode.h"
 #include "imageFormat.h"
-
 
 /**
  * Enumeration of built-in colormaps.
  * @see cudaColormapTypeFromStr() and cudaColormapTypeToStr()
  * @ingroup colormap
  */
-enum cudaColormapType
-{
-	// Palettized
-	COLORMAP_INFERNO,   /**< Inferno colormap, see http://bids.github.io/colormap/ */
-	COLORMAP_MAGMA,     /**< Magma colormap,   see http://bids.github.io/colormap/ */
-	COLORMAP_PARULA,    /**< Parula colormap,  see https://www.mathworks.com/help/matlab/ref/parula.html */
-	COLORMAP_PLASMA,    /**< Plasma colormap,  see http://bids.github.io/colormap/ */
-	COLORMAP_TURBO,     /**< Turbo colormap,   see https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html */
-	COLORMAP_VIRIDIS,   /**< Viridis colormap, see http://bids.github.io/colormap/ */
+enum cudaColormapType {
+  // Palettized
+  COLORMAP_INFERNO, /**< Inferno colormap, see http://bids.github.io/colormap/
+                     */
+  COLORMAP_MAGMA,  /**< Magma colormap,   see http://bids.github.io/colormap/ */
+  COLORMAP_PARULA, /**< Parula colormap,  see
+                      https://www.mathworks.com/help/matlab/ref/parula.html */
+  COLORMAP_PLASMA, /**< Plasma colormap,  see http://bids.github.io/colormap/ */
+  COLORMAP_TURBO,  /**< Turbo colormap,   see
+                      https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+                    */
+  COLORMAP_VIRIDIS, /**< Viridis colormap, see http://bids.github.io/colormap/
+                     */
 
-	// Palettized (inverted)
-	COLORMAP_INFERNO_INVERTED,   /**< Inferno colormap (inverted), see http://bids.github.io/colormap/ */
-	COLORMAP_MAGMA_INVERTED,     /**< Magma colormap (inverted),   see http://bids.github.io/colormap/ */
-	COLORMAP_PARULA_INVERTED,    /**< Parula colormap (inverted),  see https://www.mathworks.com/help/matlab/ref/parula.html */
-	COLORMAP_PLASMA_INVERTED,    /**< Plasma colormap (inverted),  see http://bids.github.io/colormap/ */
-	COLORMAP_TURBO_INVERTED,     /**< Turbo colormap (inverted),   see https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html */
-	COLORMAP_VIRIDIS_INVERTED,   /**< Viridis colormap (inverted), see http://bids.github.io/colormap/ */
+  // Palettized (inverted)
+  COLORMAP_INFERNO_INVERTED, /**< Inferno colormap (inverted), see
+                                http://bids.github.io/colormap/ */
+  COLORMAP_MAGMA_INVERTED,   /**< Magma colormap (inverted),   see
+                                http://bids.github.io/colormap/ */
+  COLORMAP_PARULA_INVERTED,  /**< Parula colormap (inverted),  see
+                                https://www.mathworks.com/help/matlab/ref/parula.html
+                              */
+  COLORMAP_PLASMA_INVERTED,  /**< Plasma colormap (inverted),  see
+                                http://bids.github.io/colormap/ */
+  COLORMAP_TURBO_INVERTED,   /**< Turbo colormap (inverted),   see
+                                https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+                              */
+  COLORMAP_VIRIDIS_INVERTED, /**< Viridis colormap (inverted), see
+                                http://bids.github.io/colormap/ */
 
-	// Parametric
-	COLORMAP_FLOW,		/**< Optical flow x/y velocity (2D) */
-	COLORMAP_NONE,		/**< Pass-through (no remapping applied) */
-	COLORMAP_LINEAR,	/**< Linearly remap the values to [0,255] */
+  // Parametric
+  COLORMAP_FLOW,   /**< Optical flow x/y velocity (2D) */
+  COLORMAP_NONE,   /**< Pass-through (no remapping applied) */
+  COLORMAP_LINEAR, /**< Linearly remap the values to [0,255] */
 
-	/**< Default colormap (Viridis) */
-	COLORMAP_DEFAULT = COLORMAP_VIRIDIS
+  /**< Default colormap (Viridis) */
+  COLORMAP_DEFAULT = COLORMAP_VIRIDIS
 };
 
 /**
@@ -65,85 +75,96 @@ enum cudaColormapType
  * @returns The parsed cudaColormapType, or COLORMAP_DEFAULT on error.
  * @ingroup colormap
  */
-cudaColormapType cudaColormapFromStr( const char* colormap );
+cudaColormapType cudaColormapFromStr(const char *colormap);
 
 /**
  * Convert a cudaColormapType enum to a string
  * @ingroup colormap
  */
-const char* cudaColormapToStr( cudaColormapType colormap );
+const char *cudaColormapToStr(cudaColormapType colormap);
 
 /**
  * Apply a colormap from an input image or vector field to RGB/RGBA.
- * If the input and output dimensions differ, this function will rescale the image
- * using bilinear or nearest-point interpolation as set by the `filter` mode.
+ * If the input and output dimensions differ, this function will rescale the
+ * image using bilinear or nearest-point interpolation as set by the `filter`
+ * mode.
  * @param input_range the minimum and maximum values of the input image.
  * @param colormap the colormap to apply (@see cudaColormapType)
- * @param format layout of multi-channel input data (HWC or CHW). 
+ * @param format layout of multi-channel input data (HWC or CHW).
  * @ingroup colormap
  */
-template<typename T>
-cudaError_t cudaColormap( float* input, T* output,
-					 size_t width, size_t height,
-					 const float2& input_range=make_float2(0,255),
-					 cudaDataFormat input_format=FORMAT_DEFAULT,
-					 cudaColormapType colormap=COLORMAP_DEFAULT,
-					 cudaStream_t stream=0 )					{ return cudaColormap(input, (void*)output, width, height, input_range, input_format, imageFormatFromType<T>(), colormap, stream); }
-					 
-/**
- * Apply a colormap from an input image or vector field to RGB/RGBA.
- * If the input and output dimensions differ, this function will rescale the image
- * using bilinear or nearest-point interpolation as set by the `filter` mode.
- * @param input_range the minimum and maximum values of the input image.
- * @param colormap the colormap to apply (@see cudaColormapType)
- * @param format layout of multi-channel input data (HWC or CHW). 
- * @ingroup colormap
- */
-cudaError_t cudaColormap( float* input, void* output,
-					 size_t width, size_t height,
-					 const float2& input_range=make_float2(0,255),
-					 cudaDataFormat input_format=FORMAT_DEFAULT,
-					 imageFormat output_format=IMAGE_UNKNOWN,
-                     cudaColormapType colormap=COLORMAP_DEFAULT,
-					 cudaStream_t stream=0 );
+template <typename T>
+cudaError_t cudaColormap(float *input, T *output, size_t width, size_t height,
+                         const float2 &input_range = make_float2(0, 255),
+                         cudaDataFormat input_format = FORMAT_DEFAULT,
+                         cudaColormapType colormap = COLORMAP_DEFAULT,
+                         cudaStream_t stream = 0) {
+  return cudaColormap(input, (void *)output, width, height, input_range,
+                      input_format, imageFormatFromType<T>(), colormap, stream);
+}
 
 /**
  * Apply a colormap from an input image or vector field to RGB/RGBA.
- * If the input and output dimensions differ, this function will rescale the image
- * using bilinear or nearest-point interpolation as set by the `filter` mode.
+ * If the input and output dimensions differ, this function will rescale the
+ * image using bilinear or nearest-point interpolation as set by the `filter`
+ * mode.
+ * @param input_range the minimum and maximum values of the input image.
+ * @param colormap the colormap to apply (@see cudaColormapType)
+ * @param format layout of multi-channel input data (HWC or CHW).
+ * @ingroup colormap
+ */
+cudaError_t cudaColormap(float *input, void *output, size_t width,
+                         size_t height,
+                         const float2 &input_range = make_float2(0, 255),
+                         cudaDataFormat input_format = FORMAT_DEFAULT,
+                         imageFormat output_format = IMAGE_UNKNOWN,
+                         cudaColormapType colormap = COLORMAP_DEFAULT,
+                         cudaStream_t stream = 0);
+
+/**
+ * Apply a colormap from an input image or vector field to RGB/RGBA.
+ * If the input and output dimensions differ, this function will rescale the
+ * image using bilinear or nearest-point interpolation as set by the `filter`
+ * mode.
  * @param input_range the minimum and maximum values of the input image.
  * @param colormap the colormap to apply (@see cudaColormapType)
  * @param filter the interpolation mode used for rescaling.
  * @param format layout of multi-channel input data (HWC or CHW).
  * @ingroup colormap
  */
-template<typename T>
-cudaError_t cudaColormap( float* input, size_t input_width, size_t input_height,
-					 T* output, size_t output_width, size_t output_height,
-					 const float2& input_range=make_float2(0,255),
-					 cudaDataFormat input_format=FORMAT_DEFAULT,
-                          cudaColormapType colormap=COLORMAP_DEFAULT,
-					 cudaFilterMode filter=FILTER_LINEAR,
-					 cudaStream_t stream=0 )					{ return cudaColormap(input, input_width, input_height, output, output_width, output_height, input_range, input_format, imageFormatFromType<T>(), colormap, filter, stream); }
-					 
+template <typename T>
+cudaError_t cudaColormap(float *input, size_t input_width, size_t input_height,
+                         T *output, size_t output_width, size_t output_height,
+                         const float2 &input_range = make_float2(0, 255),
+                         cudaDataFormat input_format = FORMAT_DEFAULT,
+                         cudaColormapType colormap = COLORMAP_DEFAULT,
+                         cudaFilterMode filter = FILTER_LINEAR,
+                         cudaStream_t stream = 0) {
+  return cudaColormap(input, input_width, input_height, output, output_width,
+                      output_height, input_range, input_format,
+                      imageFormatFromType<T>(), colormap, filter, stream);
+}
+
 /**
  * Apply a colormap from an input image or vector field to RGB/RGBA.
- * If the input and output dimensions differ, this function will rescale the image
- * using bilinear or nearest-point interpolation as set by the `filter` mode.
+ * If the input and output dimensions differ, this function will rescale the
+ * image using bilinear or nearest-point interpolation as set by the `filter`
+ * mode.
  * @param input_range the minimum and maximum values of the input image.
  * @param colormap the colormap to apply (@see cudaColormapType)
  * @param filter the interpolation mode used for rescaling.
  * @param format layout of multi-channel input data (HWC or CHW).
  * @ingroup colormap
  */
-cudaError_t cudaColormap( float* input, size_t input_width, size_t input_height,
-					 void* output, size_t output_width, size_t output_height,
-					 const float2& input_range=make_float2(0,255),
-					 cudaDataFormat input_format=FORMAT_DEFAULT,
-					 imageFormat output_format=IMAGE_UNKNOWN,
-                          cudaColormapType colormap=COLORMAP_DEFAULT,
-					 cudaFilterMode filter=FILTER_LINEAR,
-					 cudaStream_t stream=0 );
+cudaError_t cudaColormap(float *input, size_t input_width, size_t input_height,
+                         void *output, size_t output_width,
+                         size_t output_height,
+                         const float2 &input_range = make_float2(0, 255),
+                         cudaDataFormat input_format = FORMAT_DEFAULT,
+                         imageFormat output_format = IMAGE_UNKNOWN,
+                         cudaColormapType colormap = COLORMAP_DEFAULT,
+                         cudaFilterMode filter = FILTER_LINEAR,
+                         cudaStream_t stream = 0);
 
 /**
  * Initialize the colormap palettes by allocating them in CUDA memory.
@@ -173,8 +194,6 @@ cudaError_t cudaColormapFree();
  * @returns CUDA device pointer to the colormap palette, or `NULL` if
  *          an invalid parameterized colormap was requested.
  */
-float4* cudaColormapPalette( cudaColormapType colormap );
-
+float4 *cudaColormapPalette(cudaColormapType colormap);
 
 #endif
-

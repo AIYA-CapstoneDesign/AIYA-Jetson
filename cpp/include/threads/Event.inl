@@ -19,128 +19,101 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __MULTITHREAD_EVENT_INLINE_H
 #define __MULTITHREAD_EVENT_INLINE_H
 
 #include <errno.h>
 
-
 // constructor
-inline Event::Event( bool autoReset )
-{
-	mAutoReset = autoReset;
-	mQuery     = false;
-	
-	pthread_cond_init(&mID, NULL);
-}
+inline Event::Event(bool autoReset) {
+  mAutoReset = autoReset;
+  mQuery = false;
 
+  pthread_cond_init(&mID, NULL);
+}
 
 // destructor
-inline Event::~Event()
-{
-	pthread_cond_destroy(&mID);
-}
-
+inline Event::~Event() { pthread_cond_destroy(&mID); }
 
 // Query
-inline bool Event::Query()
-{
-	bool r = false;
-	mQueryMutex.Lock();
-	r = mQuery;
-	mQueryMutex.Unlock();
-	return r;
+inline bool Event::Query() {
+  bool r = false;
+  mQueryMutex.Lock();
+  r = mQuery;
+  mQueryMutex.Unlock();
+  return r;
 }
-
 
 // Wake
-inline void Event::Wake()
-{
-	mQueryMutex.Lock();
-	mQuery = true;
-	pthread_cond_signal(&mID);
-	mQueryMutex.Unlock();
+inline void Event::Wake() {
+  mQueryMutex.Lock();
+  mQuery = true;
+  pthread_cond_signal(&mID);
+  mQueryMutex.Unlock();
 }
-
 
 // Reset
-inline void Event::Reset()
-{ 
-	mQueryMutex.Lock(); 
-	mQuery = false; 
-	mQueryMutex.Unlock(); 
+inline void Event::Reset() {
+  mQueryMutex.Lock();
+  mQuery = false;
+  mQueryMutex.Unlock();
 }
-
 
 // Wait
-inline bool Event::Wait()
-{
-	mQueryMutex.Lock();
+inline bool Event::Wait() {
+  mQueryMutex.Lock();
 
-	while(!mQuery)
-		pthread_cond_wait(&mID, mQueryMutex.GetID());
+  while (!mQuery)
+    pthread_cond_wait(&mID, mQueryMutex.GetID());
 
-	if( mAutoReset )
-		mQuery = false;
+  if (mAutoReset)
+    mQuery = false;
 
-	mQueryMutex.Unlock();
-	return true;
+  mQueryMutex.Unlock();
+  return true;
 }
-
 
 // Wait
-inline bool Event::Wait( const timespec& timeout )
-{
-	mQueryMutex.Lock();
+inline bool Event::Wait(const timespec &timeout) {
+  mQueryMutex.Lock();
 
-	const timespec abs_time = timeAdd( timestamp(), timeout );
+  const timespec abs_time = timeAdd(timestamp(), timeout);
 
-	while(!mQuery)
-	{
-		const int ret = pthread_cond_timedwait(&mID, mQueryMutex.GetID(), &abs_time);
-		
-		if( ret == ETIMEDOUT )
-		{
-			mQueryMutex.Unlock();
-			return false;
-		}
-	}
-	
-	if( mAutoReset )
-		mQuery = false;
+  while (!mQuery) {
+    const int ret =
+        pthread_cond_timedwait(&mID, mQueryMutex.GetID(), &abs_time);
 
-	mQueryMutex.Unlock();
-	return true;
+    if (ret == ETIMEDOUT) {
+      mQueryMutex.Unlock();
+      return false;
+    }
+  }
+
+  if (mAutoReset)
+    mQuery = false;
+
+  mQueryMutex.Unlock();
+  return true;
 }
-
 
 // Wait
-inline bool Event::Wait( uint64_t timeout )		
-{ 
-	return (timeout == UINT64_MAX) ? Wait() : Wait(timeNew(timeout*1000*1000));
+inline bool Event::Wait(uint64_t timeout) {
+  return (timeout == UINT64_MAX) ? Wait()
+                                 : Wait(timeNew(timeout * 1000 * 1000));
 }
-
 
 // WaitNs
-inline bool Event::WaitNs( uint64_t timeout )		
-{ 
-	return (timeout == UINT64_MAX) ? Wait() : Wait(timeNew(timeout)); 
+inline bool Event::WaitNs(uint64_t timeout) {
+  return (timeout == UINT64_MAX) ? Wait() : Wait(timeNew(timeout));
 }
-	
 
 // WaitUs
-inline bool Event::WaitUs( uint64_t timeout )		
-{ 
-	return (timeout == UINT64_MAX) ? Wait() : Wait(timeNew(timeout*1000)); 
+inline bool Event::WaitUs(uint64_t timeout) {
+  return (timeout == UINT64_MAX) ? Wait() : Wait(timeNew(timeout * 1000));
 }
-
 
 // GetID
-inline pthread_cond_t* Event::GetID()	
-{ 
-	return &mID; 
-}
+inline pthread_cond_t *Event::GetID() { return &mID; }
 
-	
 #endif

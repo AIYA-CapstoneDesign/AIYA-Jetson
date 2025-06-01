@@ -29,51 +29,53 @@
 #define GST_USE_UNSTABLE_API
 #include <gst/webrtc/webrtc.h>
 
-
 /**
  * Static class for common WebRTC utility functions used with GStreamer.
- * This gets used internally by gstEncoder/gstDecoder for handling WebRTC streams.
+ * This gets used internally by gstEncoder/gstDecoder for handling WebRTC
+ * streams.
  * @ingroup codec
  */
-class gstWebRTC
-{
+class gstWebRTC {
 public:
-	/**
-	 * GStreamer-specific context for each WebRTCPeer
-	 */
-	struct PeerContext
-	{
-		PeerContext()	{ webrtcbin = NULL; queue = NULL; }
-		
-		GstElement* webrtcbin;	// used by gstEncoder + gstDecoder
-		GstElement* queue;		// used by gstEncoder only
-	};
+  /**
+   * GStreamer-specific context for each WebRTCPeer
+   */
+  struct PeerContext {
+    PeerContext() {
+      webrtcbin = NULL;
+      queue = NULL;
+    }
 
-	/**
-	 * Callback for handling webrtcbin "on-negotation-needed" signal.
-	 * It's expected that user_data is set to a WebRTCPeer instance.
-	 */
-	static void onNegotiationNeeded( GstElement* webrtcbin, void* user_data );
-	
-	/**
-	 * Callback for handling webrtcbin "create-offer" signal.
-	 * This sends an SDP offer to the client.
-	 */
-	static void onCreateOffer( GstPromise* promise, void* user_data );
-	
-	/**
-	 * Callback for handling webrtcbin "on-ice-candidate" signal.
-	 * This send an ICE candidate to the client.
-	 */
-	static void onIceCandidate( GstElement* webrtcbin, uint32_t mline_index, char* candidate, void* user_data );
+    GstElement *webrtcbin; // used by gstEncoder + gstDecoder
+    GstElement *queue;     // used by gstEncoder only
+  };
 
-	/**
-	 * Handle incoming websocket messages from the client.
-	 * This only handles SDP/ICE messages - it's expected that the caller will 
-	 * handle new peer connecting/closing messages.
-	 */
-	static void onWebsocketMessage( WebRTCPeer* peer, const char* message, size_t message_size, void* user_data );	
+  /**
+   * Callback for handling webrtcbin "on-negotation-needed" signal.
+   * It's expected that user_data is set to a WebRTCPeer instance.
+   */
+  static void onNegotiationNeeded(GstElement *webrtcbin, void *user_data);
+
+  /**
+   * Callback for handling webrtcbin "create-offer" signal.
+   * This sends an SDP offer to the client.
+   */
+  static void onCreateOffer(GstPromise *promise, void *user_data);
+
+  /**
+   * Callback for handling webrtcbin "on-ice-candidate" signal.
+   * This send an ICE candidate to the client.
+   */
+  static void onIceCandidate(GstElement *webrtcbin, uint32_t mline_index,
+                             char *candidate, void *user_data);
+
+  /**
+   * Handle incoming websocket messages from the client.
+   * This only handles SDP/ICE messages - it's expected that the caller will
+   * handle new peer connecting/closing messages.
+   */
+  static void onWebsocketMessage(WebRTCPeer *peer, const char *message,
+                                 size_t message_size, void *user_data);
 };
-
 
 #endif

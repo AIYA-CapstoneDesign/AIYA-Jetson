@@ -19,135 +19,133 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __MULTITHREAD_H_
 #define __MULTITHREAD_H_
 
 #include <pthread.h>
 
-
 /**
  * Function pointer typedef representing a thread's main entry point.
- * A user-defined parameter is passed through such that the user can 
+ * A user-defined parameter is passed through such that the user can
  * pass data or other value to their thread so that it can self-identify.
  * @ingroup threads
  */
-typedef void* (*ThreadEntryFunction)( void* user_param );
-
+typedef void *(*ThreadEntryFunction)(void *user_param);
 
 /**
  * Thread class for launching an asynchronous operating-system dependent thread.
- * To make your own thread, provide a function pointer of the thread's entry point,
- * or inherit from this class and implement your own Run() function.
+ * To make your own thread, provide a function pointer of the thread's entry
+ * point, or inherit from this class and implement your own Run() function.
  * @ingroup threads
  */
-class Thread
-{
+class Thread {
 public:
-	/**
-	 * Default constructor
-	 */
-	Thread();
+  /**
+   * Default constructor
+   */
+  Thread();
 
-	/**
-	 * Destructor.  Automatically stops the thread.
-	 */
-	virtual ~Thread();
+  /**
+   * Destructor.  Automatically stops the thread.
+   */
+  virtual ~Thread();
 
-	/**
-	 * User-implemented thread main() function.
-	 */
-	virtual void Run();
+  /**
+   * User-implemented thread main() function.
+   */
+  virtual void Run();
 
-	/**
-	 * Start the thread.  This will asynchronously call the Run() function.
-	 * @result False if an error occurred and the thread could not be started.
-	 */
-	bool Start();
+  /**
+   * Start the thread.  This will asynchronously call the Run() function.
+   * @result False if an error occurred and the thread could not be started.
+   */
+  bool Start();
 
-	/**
-	 * Start the thread, utilizing an entry function pointer provided by the user. 
-	 * @result False if an error occurred and the thread could not be started.
-	 */
-	bool Start( ThreadEntryFunction entry, void* user_param=NULL );
-	
-	/**
-	 * Signal for the thread to stop running.
-	 * If wait is true, Stop() will block until the thread has exited.
-	 */
-	void Stop( bool wait=false );
+  /**
+   * Start the thread, utilizing an entry function pointer provided by the user.
+   * @result False if an error occurred and the thread could not be started.
+   */
+  bool Start(ThreadEntryFunction entry, void *user_param = NULL);
 
-	/**
-	 * Prime the system for realtime use.  Mostly this is locking a large group of pages into memory.
-	 */
-	static void InitRealtime();
-	
-	/**
-	 * Get the maximum priority level available
-	 */
-	static int GetMaxPriority();
-	
-	/**
-	 * Get the minimum priority level avaiable
-	 */
-	static int GetMinPriority();
+  /**
+   * Signal for the thread to stop running.
+   * If wait is true, Stop() will block until the thread has exited.
+   */
+  void Stop(bool wait = false);
 
-	/**
-	 * Get the priority level of the thread.
-	 * @param thread The thread, or if NULL, the currently running thread.
-	 */
-	static int GetPriority( pthread_t* thread=NULL );
- 
-	/**
-	 * Set the priority level of the thread.
-	 * @param thread The thread, or if NULL, the currently running thread.
-	 */
-	static int SetPriority( int priority, pthread_t* thread=NULL );
+  /**
+   * Prime the system for realtime use.  Mostly this is locking a large group of
+   * pages into memory.
+   */
+  static void InitRealtime();
 
-	/**
-	 * Get this thread's priority level
-	 */
-	int GetPriorityLevel();
+  /**
+   * Get the maximum priority level available
+   */
+  static int GetMaxPriority();
 
-	/**
-	 * Set this thread's priority level
-	 */
-	bool SetPriorityLevel( int priority );
+  /**
+   * Get the minimum priority level avaiable
+   */
+  static int GetMinPriority();
 
-	/**
-	 * Whatever thread you are calling from, yield the processor for the specified number of milliseconds.
-	 * Accuracy may vary wildly the lower you go, and depending on the platform.
-	 */
-	static void Yield( unsigned int ms );
+  /**
+   * Get the priority level of the thread.
+   * @param thread The thread, or if NULL, the currently running thread.
+   */
+  static int GetPriority(pthread_t *thread = NULL);
 
-	/**
-	 * Get thread identififer
-	 */
-	inline pthread_t* GetThreadID() 						{ return &mThreadID; }
+  /**
+   * Set the priority level of the thread.
+   * @param thread The thread, or if NULL, the currently running thread.
+   */
+  static int SetPriority(int priority, pthread_t *thread = NULL);
 
-	/**
-	 * Lock this thread to a CPU core.
-	 */
-	bool LockAffinity( unsigned int cpu );
+  /**
+   * Get this thread's priority level
+   */
+  int GetPriorityLevel();
 
-	/**
-	 * Lock the specified thread's affinity to a CPU core.
-	 * @param cpu The CPU core to lock the thread to.
-	 * @param thread The thread, or if NULL, the currently running thread.
-	 */
-	static bool SetAffinity( unsigned int cpu, pthread_t* thread=NULL );
+  /**
+   * Set this thread's priority level
+   */
+  bool SetPriorityLevel(int priority);
 
-	/**
-	 * Look up which CPU core the thread is running on.
-	 */
-	static int GetCPU();
+  /**
+   * Whatever thread you are calling from, yield the processor for the specified
+   * number of milliseconds. Accuracy may vary wildly the lower you go, and
+   * depending on the platform.
+   */
+  static void Yield(unsigned int ms);
+
+  /**
+   * Get thread identififer
+   */
+  inline pthread_t *GetThreadID() { return &mThreadID; }
+
+  /**
+   * Lock this thread to a CPU core.
+   */
+  bool LockAffinity(unsigned int cpu);
+
+  /**
+   * Lock the specified thread's affinity to a CPU core.
+   * @param cpu The CPU core to lock the thread to.
+   * @param thread The thread, or if NULL, the currently running thread.
+   */
+  static bool SetAffinity(unsigned int cpu, pthread_t *thread = NULL);
+
+  /**
+   * Look up which CPU core the thread is running on.
+   */
+  static int GetCPU();
 
 protected:
+  static void *DefaultEntry(void *param);
 
-	static void* DefaultEntry( void* param );
-
-	pthread_t mThreadID;
-	bool mThreadStarted;
+  pthread_t mThreadID;
+  bool mThreadStarted;
 };
 
 #endif

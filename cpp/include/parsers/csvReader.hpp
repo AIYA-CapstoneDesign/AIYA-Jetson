@@ -19,292 +19,257 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __CSV_READER_HPP_
 #define __CSV_READER_HPP_
-
 
 #include "csvReader.h"
 #include "logging.h"
 
-
 // toInt()
-inline bool csvData::toInt( int* value ) const
-{
-	char* e;
-	errno = 0;
+inline bool csvData::toInt(int *value) const {
+  char *e;
+  errno = 0;
 
-	const int x = strtol(string.c_str(), &e, 0);
+  const int x = strtol(string.c_str(), &e, 0);
 
-	if( *e != '\0' || errno != 0 )
-		return false;
+  if (*e != '\0' || errno != 0)
+    return false;
 
-	if( value != NULL )
-		*value = x;
+  if (value != NULL)
+    *value = x;
 
-	return true;
+  return true;
 }
 
 // toFloat()
-inline bool csvData::toFloat( float* value ) const
-{
-	char* e;
-	errno = 0;
+inline bool csvData::toFloat(float *value) const {
+  char *e;
+  errno = 0;
 
-	const float x = strtof(string.c_str(), &e);
+  const float x = strtof(string.c_str(), &e);
 
-	if( *e != '\0' || errno != 0 )
-		return false;
+  if (*e != '\0' || errno != 0)
+    return false;
 
-	if( value != NULL )
-		*value = x;
+  if (value != NULL)
+    *value = x;
 
-	return true;
+  return true;
 }
 
 // toDouble()
-inline bool csvData::toDouble( double* value ) const
-{
-	char* e;
-	errno = 0;
+inline bool csvData::toDouble(double *value) const {
+  char *e;
+  errno = 0;
 
-	const float x = strtof(string.c_str(), &e);
+  const float x = strtof(string.c_str(), &e);
 
-	if( *e != '\0' || errno != 0 )
-		return false;
+  if (*e != '\0' || errno != 0)
+    return false;
 
-	if( value != NULL )
-		*value = x;
+  if (value != NULL)
+    *value = x;
 
-	return true;
+  return true;
 }
 
 // toInt()
-inline int csvData::toInt( bool* valid ) const			
-{ 
-	int x=0; 
-	const bool v=toInt(&x); 
+inline int csvData::toInt(bool *valid) const {
+  int x = 0;
+  const bool v = toInt(&x);
 
-	if( valid != NULL ) 
-		*valid=v;
+  if (valid != NULL)
+    *valid = v;
 
-	return x; 
+  return x;
 }
 
 // toFloat()
-inline float csvData::toFloat( bool* valid ) const		
-{ 
-	float x=0.0f; 
-	const bool v=toFloat(&x); 
+inline float csvData::toFloat(bool *valid) const {
+  float x = 0.0f;
+  const bool v = toFloat(&x);
 
-	if( valid != NULL ) 
-		*valid=v; 
+  if (valid != NULL)
+    *valid = v;
 
-	return x; 
+  return x;
 }
 
 // toDouble()
-inline double csvData::toDouble( bool* valid ) const		
-{ 
-	double x=0.0f; 
-	const bool v=toDouble(&x); 
+inline double csvData::toDouble(bool *valid) const {
+  double x = 0.0f;
+  const bool v = toDouble(&x);
 
-	if( valid != NULL ) 
-		*valid=v; 
+  if (valid != NULL)
+    *valid = v;
 
-	return x; 
+  return x;
 }
 
 // operator >>
-inline std::istream& operator >> (std::istream& in, csvData& obj)
-{
-	in >> obj.string;
-	return in;
+inline std::istream &operator>>(std::istream &in, csvData &obj) {
+  in >> obj.string;
+  return in;
 }
 
 // operator <<
-inline std::ostream& operator << (std::ostream& out, const csvData& obj)
-{
-	out << obj.string;
-	return out;
+inline std::ostream &operator<<(std::ostream &out, const csvData &obj) {
+  out << obj.string;
+  return out;
 }
 
 // Parse()
-inline std::vector<csvData> csvData::Parse( const char* str, const char* delimiters ) 
-{
-	std::vector<csvData> tokens;
-	Parse(tokens, str, delimiters);
-	return tokens;
+inline std::vector<csvData> csvData::Parse(const char *str,
+                                           const char *delimiters) {
+  std::vector<csvData> tokens;
+  Parse(tokens, str, delimiters);
+  return tokens;
 }
 
 // Parse
-inline bool csvData::Parse( std::vector<csvData>& tokens, const char* str, const char* delimiters )
-{
-	if( !str || !delimiters )
-		return false;
+inline bool csvData::Parse(std::vector<csvData> &tokens, const char *str,
+                           const char *delimiters) {
+  if (!str || !delimiters)
+    return false;
 
-	tokens.clear();
+  tokens.clear();
 
-	const size_t str_length = strlen(str);
-	char* str_tokens = (char*)malloc(str_length + 1);
+  const size_t str_length = strlen(str);
+  char *str_tokens = (char *)malloc(str_length + 1);
 
-	if( !str_tokens )
-		return false;
+  if (!str_tokens)
+    return false;
 
-	strcpy(str_tokens, str);
+  strcpy(str_tokens, str);
 
-	if( str_tokens[str_length] == '\n' )
-		str_tokens[str_length] = '\0';
+  if (str_tokens[str_length] == '\n')
+    str_tokens[str_length] = '\0';
 
-	if( str_tokens[str_length-1] == '\n' )
-		str_tokens[str_length-1] = '\0';
+  if (str_tokens[str_length - 1] == '\n')
+    str_tokens[str_length - 1] = '\0';
 
-	char* token = strtok(str_tokens, delimiters);
+  char *token = strtok(str_tokens, delimiters);
 
-	while( token != NULL )
-	{
-		tokens.push_back(token);
-		token = strtok(NULL, delimiters);
-	}
+  while (token != NULL) {
+    tokens.push_back(token);
+    token = strtok(NULL, delimiters);
+  }
 
-	free(str_tokens);
-	return tokens.size() > 0;
+  free(str_tokens);
+  return tokens.size() > 0;
 }
 
 //-------------------------------------------------------------------------------------
 // constructor
-csvReader::csvReader( const char* filename, const char* delimiters ) : mFile(NULL)
-{
-	if( !filename || !delimiters )
-		return;
+csvReader::csvReader(const char *filename, const char *delimiters)
+    : mFile(NULL) {
+  if (!filename || !delimiters)
+    return;
 
-	mFile = fopen(filename, "r");
+  mFile = fopen(filename, "r");
 
-	if( !mFile )
-	{
-		LogError("csvReader -- failed to open file %s\n", filename);
-		perror("csvReader -- error");
-		return;
-	}
+  if (!mFile) {
+    LogError("csvReader -- failed to open file %s\n", filename);
+    perror("csvReader -- error");
+    return;
+  }
 
-	mFilename = filename;
-	mDelimiters = delimiters;
+  mFilename = filename;
+  mDelimiters = delimiters;
 }
 
 // destructor
-csvReader::~csvReader()
-{
-	Close();
-}
+csvReader::~csvReader() { Close(); }
 
-	
 // open
-inline csvReader* csvReader::Open( const char* filename, const char* delimiters )
-{
-	if( !filename || !delimiters )
-		return NULL;
+inline csvReader *csvReader::Open(const char *filename,
+                                  const char *delimiters) {
+  if (!filename || !delimiters)
+    return NULL;
 
-	csvReader* csv = new csvReader(filename, delimiters);
+  csvReader *csv = new csvReader(filename, delimiters);
 
-	if( !csv->IsOpen() )
-	{
-		delete csv;
-		return NULL;
-	}
+  if (!csv->IsOpen()) {
+    delete csv;
+    return NULL;
+  }
 
-	return csv;
+  return csv;
 }
 
 // close
-inline void csvReader::Close()
-{
-	if( IsClosed() )
-		return;
+inline void csvReader::Close() {
+  if (IsClosed())
+    return;
 
-	fclose(mFile);
-	mFile = NULL;
+  fclose(mFile);
+  mFile = NULL;
 }
 
 // isOpen
-inline bool csvReader::IsOpen() const
-{
-	return mFile != NULL;
-}
+inline bool csvReader::IsOpen() const { return mFile != NULL; }
 
 // isClosed
-inline bool csvReader::IsClosed() const
-{
-	return !IsOpen();
+inline bool csvReader::IsClosed() const { return !IsOpen(); }
+
+// readLine
+inline std::vector<csvData> csvReader::Read() {
+  return Read(mDelimiters.c_str());
 }
 
 // readLine
-inline std::vector<csvData> csvReader::Read()
-{
-	return Read(mDelimiters.c_str());
+inline std::vector<csvData> csvReader::Read(const char *delimiters) {
+  std::vector<csvData> tokens;
+  Read(tokens, delimiters);
 }
 
 // readLine
-inline std::vector<csvData> csvReader::Read( const char* delimiters )
-{
-	std::vector<csvData> tokens;
-	Read(tokens, delimiters);
+inline bool csvReader::Read(std::vector<csvData> &data) {
+  return Read(data, mDelimiters.c_str());
 }
 
 // readLine
-inline bool csvReader::Read( std::vector<csvData>& data )
-{
-	return Read(data, mDelimiters.c_str());
-}
+inline bool csvReader::Read(std::vector<csvData> &data,
+                            const char *delimiters) {
+  if (IsClosed())
+    return false;
 
-// readLine
-inline bool csvReader::Read( std::vector<csvData>& data, const char* delimiters )
-{
-	if( IsClosed() )
-		return false;
+  // read the next line
+  char str[MaxLineLength];
 
-	// read the next line
-	char str[MaxLineLength];
+  if (fgets(str, sizeof(str), mFile) == NULL) {
+    if (ferror(mFile)) {
+      LogError("csvReader -- error reading file %s\n", mFilename.c_str());
+      perror("csvReader -- error");
+    }
 
-	if( fgets(str, sizeof(str), mFile) == NULL )
-	{
-		if( ferror(mFile) )
-		{
-			LogError("csvReader -- error reading file %s\n", mFilename.c_str());
-			perror("csvReader -- error");
-		}
+    Close();
+    return false;
+  }
 
-		Close();
-		return false;
-	}
+  // check if EOF was reached
+  if (feof(mFile) == EOF)
+    Close();
 
-	// check if EOF was reached
-	if( feof(mFile) == EOF )
-		Close();
+  // disregard comments
+  if (str[0] == '#')
+    return Read(data, delimiters);
 
-	// disregard comments
-	if( str[0] == '#' )
-		return Read(data, delimiters);
-
-	return csvData::Parse(data, str, delimiters);
+  return csvData::Parse(data, str, delimiters);
 }
 
 // SetDelimiters
-inline void csvReader::SetDelimiters( const char* delimiters )
-{
-	mDelimiters = delimiters;
+inline void csvReader::SetDelimiters(const char *delimiters) {
+  mDelimiters = delimiters;
 }
 
 // GetDelimiters
-inline const char* csvReader::GetDelimiters() const
-{
-	return mDelimiters.c_str();
+inline const char *csvReader::GetDelimiters() const {
+  return mDelimiters.c_str();
 }
 
 // GetFilename
-inline const char* csvReader::GetFilename() const
-{
-	return mFilename.c_str();
-}
+inline const char *csvReader::GetFilename() const { return mFilename.c_str(); }
 
 #endif
-

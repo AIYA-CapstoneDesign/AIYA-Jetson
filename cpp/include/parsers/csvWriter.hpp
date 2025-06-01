@@ -19,176 +19,138 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __CSV_WRITER_HPP_
 #define __CSV_WRITER_HPP_
-
 
 #include "csvWriter.h"
 #include "logging.h"
 
-
 // constructor
-csvWriter::csvWriter( const char* filename, const char* delimiter )
-{
-	if( !filename || !delimiter )
-		return;
+csvWriter::csvWriter(const char *filename, const char *delimiter) {
+  if (!filename || !delimiter)
+    return;
 
-	mFile.open(filename);
+  mFile.open(filename);
 
-	if( !IsOpen() )
-	{
-		LogError("csvWriter -- failed to open file %s\n", filename);
-		return;
-	}
+  if (!IsOpen()) {
+    LogError("csvWriter -- failed to open file %s\n", filename);
+    return;
+  }
 
-	mFilename  = filename;
-	mDelimiter = delimiter;
-	mNewLine   = true;
+  mFilename = filename;
+  mDelimiter = delimiter;
+  mNewLine = true;
 }
-
 
 // destructor
-csvWriter::~csvWriter()
-{
-	Close();
-}
+csvWriter::~csvWriter() { Close(); }
 
-	
 // open
-inline csvWriter* csvWriter::Open( const char* filename, const char* delimiter )
-{
-	if( !filename || !delimiter )
-		return NULL;
+inline csvWriter *csvWriter::Open(const char *filename, const char *delimiter) {
+  if (!filename || !delimiter)
+    return NULL;
 
-	csvWriter* csv = new csvWriter(filename, delimiter);
+  csvWriter *csv = new csvWriter(filename, delimiter);
 
-	if( !csv->IsOpen() )
-	{
-		delete csv;
-		return NULL;
-	}
+  if (!csv->IsOpen()) {
+    delete csv;
+    return NULL;
+  }
 
-	return csv;
+  return csv;
 }
 
 // close
-inline void csvWriter::Close()
-{
-	if( IsClosed() )
-		return;
+inline void csvWriter::Close() {
+  if (IsClosed())
+    return;
 
-	Flush();
-	mFile.close();
+  Flush();
+  mFile.close();
 }
 
 // flush
-inline void csvWriter::Flush()
-{
-	mFile.flush();
-}
+inline void csvWriter::Flush() { mFile.flush(); }
 
 // isOpen
-inline bool csvWriter::IsOpen() const
-{
-	return mFile.is_open();
-}
+inline bool csvWriter::IsOpen() const { return mFile.is_open(); }
 
 // isClosed
-inline bool csvWriter::IsClosed() const
-{
-	return !IsOpen();
-}
+inline bool csvWriter::IsClosed() const { return !IsOpen(); }
 
 // EndLine
-inline void csvWriter::EndLine()
-{
-	mFile << std::endl;
-	mNewLine = true;
+inline void csvWriter::EndLine() {
+  mFile << std::endl;
+  mNewLine = true;
 }
 
 // Write
-template<typename T>
-inline csvWriter& csvWriter::Write( const T& value )
-{
-	if( !mNewLine )
-		mFile << mDelimiter;
-	else
-		mNewLine = false;
+template <typename T> inline csvWriter &csvWriter::Write(const T &value) {
+  if (!mNewLine)
+    mFile << mDelimiter;
+  else
+    mNewLine = false;
 
-	mFile << value;
-	return *this;
+  mFile << value;
+  return *this;
 }
 
 // Write
-template<typename T, typename... Args>
-inline csvWriter& csvWriter::Write( const T& value, const Args&... args )
-{
-	Write(value);
-	Write(args...);
-	return *this;
+template <typename T, typename... Args>
+inline csvWriter &csvWriter::Write(const T &value, const Args &...args) {
+  Write(value);
+  Write(args...);
+  return *this;
 }
 
 // WriteLine
-template<typename T, typename... Args>
-inline csvWriter& csvWriter::WriteLine( const T& value, const Args&... args )
-{
-	Write(value);
-	Write(args...);
-	EndLine();
-	return *this;
+template <typename T, typename... Args>
+inline csvWriter &csvWriter::WriteLine(const T &value, const Args &...args) {
+  Write(value);
+  Write(args...);
+  EndLine();
+  return *this;
 }
 
 // stream insertion
-template<typename T>
-inline csvWriter& csvWriter::operator << ( const T& value )
-{
-	return Write(value);
+template <typename T> inline csvWriter &csvWriter::operator<<(const T &value) {
+  return Write(value);
 }
 
 // stream manipulator
-inline csvWriter& csvWriter::operator << ( csvWriter& (*value)(csvWriter&) )
-{
-	return value(*this);
+inline csvWriter &csvWriter::operator<<(csvWriter &(*value)(csvWriter &)) {
+  return value(*this);
 }
 
 // SetDelimiter
-inline void csvWriter::SetDelimiter( const char* delimiter )
-{
-	mDelimiter = delimiter;
+inline void csvWriter::SetDelimiter(const char *delimiter) {
+  mDelimiter = delimiter;
 }
 
 // GetDelimiter
-inline const char* csvWriter::GetDelimiter() const
-{
-	return mDelimiter.c_str();
+inline const char *csvWriter::GetDelimiter() const {
+  return mDelimiter.c_str();
 }
 
 // GetFilename
-inline const char* csvWriter::GetFilename() const
-{
-	return mFilename.c_str();
-}
+inline const char *csvWriter::GetFilename() const { return mFilename.c_str(); }
 
 //----------------------------------------------------------------
-namespace csv
-{
+namespace csv {
 
 // endl
-inline static csvWriter& endl( csvWriter& file )
-{
-    file.EndLine();
-    return file;
+inline static csvWriter &endl(csvWriter &file) {
+  file.EndLine();
+  return file;
 }
 
 // flush
-inline static csvWriter& flush( csvWriter& file )
-{
-    file.Flush();
-    return file;
+inline static csvWriter &flush(csvWriter &file) {
+  file.Flush();
+  return file;
 }
 
-}
+} // namespace csv
 
 #endif
-

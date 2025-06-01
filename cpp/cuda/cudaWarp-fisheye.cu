@@ -22,79 +22,80 @@
 
 #include "cudaWarp.h"
 
-
 // cudaFisheye
-template<typename T>
-__global__ void cudaFisheye( T* input, T* output, int width, int height, float focus )
-{
-	const int2 uv_out = make_int2(blockDim.x * blockIdx.x + threadIdx.x,
-				               blockDim.y * blockIdx.y + threadIdx.y);
-						   
-	if( uv_out.x >= width || uv_out.y >= height )
-		return;
-	
-	const float fWidth  = width;
-	const float fHeight = height;
-	
-	// convert to cartesian coordinates
-	const float cx = ((uv_out.x / fWidth) - 0.5f)  * 2.0f;	
-	const float cy = (0.5f - (uv_out.y / fHeight)) * 2.0f;
+template <typename T>
+__global__ void cudaFisheye(T *input, T *output, int width, int height,
+                            float focus) {
+  const int2 uv_out = make_int2(blockDim.x * blockIdx.x + threadIdx.x,
+                                blockDim.y * blockIdx.y + threadIdx.y);
 
-	const float theta = atan2f(cy, cx);
-	const float r     = atanf(sqrtf(cx*cx+cy*cy) * focus);
-	
-	const float tx = r * __cosf(theta);
-	const float ty = r * __sinf(theta);
-	
-	// convert back out of cartesian coordinates
-	float u = (tx * 0.5f + 0.5f) * fWidth;
-	float v = (0.5f - (ty * 0.5f)) * fHeight;
+  if (uv_out.x >= width || uv_out.y >= height)
+    return;
 
-	if( u < 0.0f ) u = 0.0f;
-	if( v < 0.0f ) v = 0.0f;
+  const float fWidth = width;
+  const float fHeight = height;
 
-	if( u > fWidth  - 1.0f ) u = fWidth - 1.0f;
-	if( v > fHeight - 1.0f ) v = fHeight - 1.0f;
-	
-	output[uv_out.y * width + uv_out.x] = input[(int)v * width + (int)u];
-} 
+  // convert to cartesian coordinates
+  const float cx = ((uv_out.x / fWidth) - 0.5f) * 2.0f;
+  const float cy = (0.5f - (uv_out.y / fHeight)) * 2.0f;
 
+  const float theta = atan2f(cy, cx);
+  const float r = atanf(sqrtf(cx * cx + cy * cy) * focus);
 
-// cudaWarpFisheye
-cudaError_t cudaWarpFisheye( uchar4* input, uchar4* output, uint32_t width, uint32_t height, float focus, cudaStream_t stream )
-{
-	if( !input || !output )
-		return cudaErrorInvalidDevicePointer;
+  const float tx = r * __cosf(theta);
+  const float ty = r * __sinf(theta);
 
-	if( width == 0 || height == 0 )
-		return cudaErrorInvalidValue;
+  // convert back out of cartesian coordinates
+  float u = (tx * 0.5f + 0.5f) * fWidth;
+  float v = (0.5f - (ty * 0.5f)) * fHeight;
 
-	// launch kernel
-	const dim3 blockDim(8, 8);
-	const dim3 gridDim(iDivUp(width,blockDim.x), iDivUp(height,blockDim.y));
+  if (u < 0.0f)
+    u = 0.0f;
+  if (v < 0.0f)
+    v = 0.0f;
 
-	cudaFisheye<<<gridDim, blockDim, 0, stream>>>(input, output, width, height, focus);
+  if (u > fWidth - 1.0f)
+    u = fWidth - 1.0f;
+  if (v > fHeight - 1.0f)
+    v = fHeight - 1.0f;
 
-	return CUDA(cudaGetLastError());
+  output[uv_out.y * width + uv_out.x] = input[(int)v * width + (int)u];
 }
 
-
 // cudaWarpFisheye
-cudaError_t cudaWarpFisheye( float4* input, float4* output, uint32_t width, uint32_t height, float focus, cudaStream_t stream )
-{
-	if( !input || !output )
-		return cudaErrorInvalidDevicePointer;
+cudaError_t cudaWarpFisheye(uchar4 *input, uchar4 *output, uint32_t width,
+                            uint32_t height, float focus, cudaStream_t stream) {
+  if (!input || !output)
+    return cudaErrorInvalidDevicePointer;
 
-	if( width == 0 || height == 0 )
-		return cudaErrorInvalidValue;
+  if (width == 0 || height == 0)
+    return cudaErrorInvalidValue;
 
-	// launch kernel
-	const dim3 blockDim(8, 8);
-	const dim3 gridDim(iDivUp(width,blockDim.x), iDivUp(height,blockDim.y));
+  // launch kernel
+  const dim3 blockDim(8, 8);
+  const dim3 gridDim(iDivUp(width, blockDim.x), iDivUp(height, blockDim.y));
 
-	cudaFisheye<<<gridDim, blockDim, 0, stream>>>(input, output, width, height, focus);
+  cudaFisheye<<<gridDim, blockDim, 0, stream>>>(input, output, width, height,
+                                                focus);
 
-	return CUDA(cudaGetLastError());
+  return CUDA(cudaGetLastError());
 }
 
+// cudaWarpFisheye
+cudaError_t cudaWarpFisheye(float4 *input, float4 *output, uint32_t width,
+                            uint32_t height, float focus, cudaStream_t stream) {
+  if (!input || !output)
+    return cudaErrorInvalidDevicePointer;
 
+  if (width == 0 || height == 0)
+    return cudaErrorInvalidValue;
+
+  // launch kernel
+  const dim3 blockDim(8, 8);
+  const dim3 gridDim(iDivUp(width, blockDim.x), iDivUp(height, blockDim.y));
+
+  cudaFisheye<<<gridDim, blockDim, 0, stream>>>(input, output, width, height,
+                                                focus);
+
+  return CUDA(cudaGetLastError());
+}

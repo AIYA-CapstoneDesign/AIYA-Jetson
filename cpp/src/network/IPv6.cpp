@@ -19,56 +19,54 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #include "IPv6.h"
 #include "Networking.h"
 #include "logging.h"
 
 #include <arpa/inet.h>
 #include <cstring>
-#include <unistd.h>
-#include <sys/types.h>
-#include <ifaddrs.h>
 #include <errno.h>
-
+#include <ifaddrs.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // IPv6AddressFromStr
-bool IPv6AddressFromStr( const char* str, void* ipAddress )
-{
-	if( !str || !ipAddress )
-		return false;
+bool IPv6AddressFromStr(const char *str, void *ipAddress) {
+  if (!str || !ipAddress)
+    return false;
 
-	in6_addr addr;
+  in6_addr addr;
 
-	const int res = inet_pton(AF_INET6, str, &addr);
+  const int res = inet_pton(AF_INET6, str, &addr);
 
-	if( res != 1 )
-	{
-		LogError(LOG_NETWORK "IPv6AddressFromStr() failed to convert '%s' to valid IPv6 address\n", str);
-		return false;
-	}
-	
-	memcpy(ipAddress, addr.s6_addr, INET6_ADDRLEN);
-	return true;
+  if (res != 1) {
+    LogError(
+        LOG_NETWORK
+        "IPv6AddressFromStr() failed to convert '%s' to valid IPv6 address\n",
+        str);
+    return false;
+  }
+
+  memcpy(ipAddress, addr.s6_addr, INET6_ADDRLEN);
+  return true;
 }
-
 
 // IPv6AddressToStr
-std::string IPv6AddressToStr( void* ipAddress )
-{
-	if( !ipAddress )
-		return "";
-	
-	char str[INET6_ADDRSTRLEN];
-	memset(str, 0, INET6_ADDRSTRLEN);
+std::string IPv6AddressToStr(void *ipAddress) {
+  if (!ipAddress)
+    return "";
 
-	if( inet_ntop(AF_INET6, ipAddress, str, INET6_ADDRSTRLEN) == NULL )
-	{
-		uint16_t* i = (uint16_t*)ipAddress;
-		LogError("IPv6AddressToStr() failed to convert %04hX:%04hX:%04hX:%04hX:%04hX:%04hX:%04hX:%04hX to string\n", i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]);
-		return "";
-	}
-	
-	return std::string(str);
+  char str[INET6_ADDRSTRLEN];
+  memset(str, 0, INET6_ADDRSTRLEN);
+
+  if (inet_ntop(AF_INET6, ipAddress, str, INET6_ADDRSTRLEN) == NULL) {
+    uint16_t *i = (uint16_t *)ipAddress;
+    LogError("IPv6AddressToStr() failed to convert "
+             "%04hX:%04hX:%04hX:%04hX:%04hX:%04hX:%04hX:%04hX to string\n",
+             i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]);
+    return "";
+  }
+
+  return std::string(str);
 }
-

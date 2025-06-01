@@ -23,16 +23,14 @@
 #ifndef __GSTREAMER_ENCODER_H__
 #define __GSTREAMER_ENCODER_H__
 
+#include "RingBuffer.h"
 #include "gstUtility.h"
 #include "videoOutput.h"
-#include "RingBuffer.h"
-
 
 // Forward declarations
 class RTSPServer;
 class WebRTCServer;
 struct WebRTCPeer;
-
 
 /**
  * Hardware-accelerated video encoder for Jetson using GStreamer.
@@ -48,121 +46,127 @@ struct WebRTCPeer;
  * @see videoOutput
  * @ingroup codec
  */
-class gstEncoder : public videoOutput
-{
+class gstEncoder : public videoOutput {
 public:
-	/**
-	 * Create an encoder from the provided video options.
-	 */
-	static gstEncoder* Create( const videoOptions& options );
+  /**
+   * Create an encoder from the provided video options.
+   */
+  static gstEncoder *Create(const videoOptions &options);
 
-	/**
-	 * Create an encoder instance from resource URI and codec.
-	 */
-	static gstEncoder* Create( const URI& resource, videoOptions::Codec codec );
-	
-	/**
-	 * Destructor
-	 */
-	~gstEncoder();
-	
-	/**
-	 * Encode the next frame.
-	 * @see videoOutput::Render()
-	 */
-	template<typename T> bool Render( T* image, uint32_t width, uint32_t height, cudaStream_t stream=0 )		{ return Render((void**)image, width, height, imageFormatFromType<T>(), stream); }
-	
-	/**
-	 * Encode the next frame.
-	 * @see videoOutput::Render()
-	 */
-	virtual bool Render( void* image, uint32_t width, uint32_t height, imageFormat format, cudaStream_t stream=0 );
+  /**
+   * Create an encoder instance from resource URI and codec.
+   */
+  static gstEncoder *Create(const URI &resource, videoOptions::Codec codec);
 
-	/**
-	 * Open the stream.
-	 * @see videoOutput::Open()
-	 */
-	virtual bool Open();
+  /**
+   * Destructor
+   */
+  ~gstEncoder();
 
-	/**
-	 * Close the stream.
-	 * @see videoOutput::Open()
-	 */
-	virtual void Close();
+  /**
+   * Encode the next frame.
+   * @see videoOutput::Render()
+   */
+  template <typename T>
+  bool Render(T *image, uint32_t width, uint32_t height,
+              cudaStream_t stream = 0) {
+    return Render((void **)image, width, height, imageFormatFromType<T>(),
+                  stream);
+  }
 
-	/**
-	 * Return the GStreamer pipeline object.
-	 */
-	inline GstPipeline* GetPipeline() const			{ return GST_PIPELINE(mPipeline); }
-	
-	/**
-	 * Return the WebRTC server (only used when the protocol is "webrtc://")
-	 */
-	inline WebRTCServer* GetWebRTCServer() const 	{ return mWebRTCServer; }
-	
-	/**
-	 * Return the interface type (gstEncoder::Type)
-	 */
-	virtual inline uint32_t GetType() const			{ return Type; }
+  /**
+   * Encode the next frame.
+   * @see videoOutput::Render()
+   */
+  virtual bool Render(void *image, uint32_t width, uint32_t height,
+                      imageFormat format, cudaStream_t stream = 0);
 
-	/**
-	 * Unique type identifier of gstEncoder class.
-	 */
-	static const uint32_t Type = (1 << 2);
+  /**
+   * Open the stream.
+   * @see videoOutput::Open()
+   */
+  virtual bool Open();
 
-	/**
-	 * String array of supported video file extensions, terminated
-	 * with a NULL sentinel value.  The supported extension are:
-	 *
-	 *    - MKV
-	 *    - MP4 / QT
-	 *    - AVI
-	 *    - FLV
-	 *
-	 * @see IsSupportedExtension() to check a string against this list.
-	 */
-	static const char* SupportedExtensions[];
+  /**
+   * Close the stream.
+   * @see videoOutput::Open()
+   */
+  virtual void Close();
 
-	/**
-	 * Return true if the extension is in the list of SupportedExtensions.
-	 * @param ext string containing the extension to be checked (should not contain leading dot)
-	 * @see SupportedExtensions for the list of supported video file extensions.
-	 */
-	static bool IsSupportedExtension( const char* ext );
+  /**
+   * Return the GStreamer pipeline object.
+   */
+  inline GstPipeline *GetPipeline() const { return GST_PIPELINE(mPipeline); }
+
+  /**
+   * Return the WebRTC server (only used when the protocol is "webrtc://")
+   */
+  inline WebRTCServer *GetWebRTCServer() const { return mWebRTCServer; }
+
+  /**
+   * Return the interface type (gstEncoder::Type)
+   */
+  virtual inline uint32_t GetType() const { return Type; }
+
+  /**
+   * Unique type identifier of gstEncoder class.
+   */
+  static const uint32_t Type = (1 << 2);
+
+  /**
+   * String array of supported video file extensions, terminated
+   * with a NULL sentinel value.  The supported extension are:
+   *
+   *    - MKV
+   *    - MP4 / QT
+   *    - AVI
+   *    - FLV
+   *
+   * @see IsSupportedExtension() to check a string against this list.
+   */
+  static const char *SupportedExtensions[];
+
+  /**
+   * Return true if the extension is in the list of SupportedExtensions.
+   * @param ext string containing the extension to be checked (should not
+   * contain leading dot)
+   * @see SupportedExtensions for the list of supported video file extensions.
+   */
+  static bool IsSupportedExtension(const char *ext);
 
 protected:
-	gstEncoder( const videoOptions& options );
-	
-	bool init();
-	bool initPipeline();
-	void destroyPipeline();
-	
-	void checkMsgBus();
-	bool buildCapsStr();
-	bool buildLaunchStr();
-	bool encodeYUV( void* buffer, size_t size );
-	
-	// appsrc callbacks
-	static void onNeedData( GstElement* pipeline, uint32_t size, void* user_data );
-	static void onEnoughData( GstElement* pipeline, void* user_data );
+  gstEncoder(const videoOptions &options);
 
-	// WebRTC callbacks
-	static void onWebsocketMessage( WebRTCPeer* peer, const char* message, size_t message_size, void* user_data );
+  bool init();
+  bool initPipeline();
+  void destroyPipeline();
 
-	GstBus*     mBus;
-	GstCaps*    mBufferCaps;
-	GstElement* mAppSrc;
-	GstElement* mPipeline;
-	bool        mNeedData;
-	
-	std::string  mCapsStr;
-	std::string  mLaunchStr;
+  void checkMsgBus();
+  bool buildCapsStr();
+  bool buildLaunchStr();
+  bool encodeYUV(void *buffer, size_t size);
 
-	RingBuffer mBufferYUV;
-	
-	RTSPServer*   mRTSPServer;
-	WebRTCServer* mWebRTCServer;
+  // appsrc callbacks
+  static void onNeedData(GstElement *pipeline, uint32_t size, void *user_data);
+  static void onEnoughData(GstElement *pipeline, void *user_data);
+
+  // WebRTC callbacks
+  static void onWebsocketMessage(WebRTCPeer *peer, const char *message,
+                                 size_t message_size, void *user_data);
+
+  GstBus *mBus;
+  GstCaps *mBufferCaps;
+  GstElement *mAppSrc;
+  GstElement *mPipeline;
+  bool mNeedData;
+
+  std::string mCapsStr;
+  std::string mLaunchStr;
+
+  RingBuffer mBufferYUV;
+
+  RTSPServer *mRTSPServer;
+  WebRTCServer *mWebRTCServer;
 };
- 
- 
+
 #endif

@@ -19,14 +19,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __LOAD_IMAGE_H_
 #define __LOAD_IMAGE_H_
-
 
 // the contents of loadImage.h were relocated to imageIO.h
 // this header is now provided for backwards compatability
 #include "imageIO.h"
-
 
 #endif

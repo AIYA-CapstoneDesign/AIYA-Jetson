@@ -26,16 +26,14 @@
 #include <gst/gst.h>
 #include <sstream>
 
-#include "videoOptions.h"
 #include "NvInfer.h"
-
+#include "videoOptions.h"
 
 /**
  * LOG_GSTREAMER logging prefix
  * @ingroup codec
  */
 #define LOG_GSTREAMER "[gstreamer] "
-
 
 /**
  * gstreamerInit
@@ -49,56 +47,59 @@ bool gstreamerInit();
  * @internal
  * @ingroup codec
  */
-gboolean gst_message_print(_GstBus* bus, _GstMessage* message, void* user_data);
+gboolean gst_message_print(_GstBus *bus, _GstMessage *message, void *user_data);
 
 /**
  * gst_parse_codec
  * @internal
  * @ingroup codec
  */
-videoOptions::Codec gst_parse_codec( GstStructure* caps );
+videoOptions::Codec gst_parse_codec(GstStructure *caps);
 
 /**
  * gst_parse_format
  * @internal
  * @ingroup codec
  */
-imageFormat gst_parse_format( GstStructure* caps );
+imageFormat gst_parse_format(GstStructure *caps);
 
 /**
  * gst_codec_to_string
  * @internal
  * @ingroup codec
  */
-const char* gst_codec_to_string( videoOptions::Codec codec );
+const char *gst_codec_to_string(videoOptions::Codec codec);
 
 /**
  * gst_format_to_string
  * @internal
  * @ingroup codec
  */
-const char* gst_format_to_string( imageFormat format );
+const char *gst_format_to_string(imageFormat format);
 
 /**
  * gst_build_filesink
  * @internal
  * @ingroup codec
  */
-bool gst_build_filesink( const URI& uri, videoOptions::Codec codec, std::ostringstream& pipeline );
+bool gst_build_filesink(const URI &uri, videoOptions::Codec codec,
+                        std::ostringstream &pipeline);
 
 /**
  * gst_select_decoder
  * @internal
  * @ingroup codec
  */
-const char* gst_select_decoder( videoOptions::Codec codec, videoOptions::CodecType& type );
+const char *gst_select_decoder(videoOptions::Codec codec,
+                               videoOptions::CodecType &type);
 
 /**
  * gst_select_decoder
  * @internal
  * @ingroup codec
  */
-const char* gst_select_encoder( videoOptions::Codec codec, videoOptions::CodecType& type );
+const char *gst_select_encoder(videoOptions::Codec codec,
+                               videoOptions::CodecType &type);
 
 /**
  * gst_default_codec
@@ -106,6 +107,5 @@ const char* gst_select_encoder( videoOptions::Codec codec, videoOptions::CodecTy
  * @ingroup codec
  */
 videoOptions::CodecType gst_default_codec();
-
 
 #endif

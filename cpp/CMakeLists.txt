@@ -34,6 +34,18 @@ pkg_check_modules(GST REQUIRED
     gstreamer-video-1.0
 )
 
+# libsoup and json-glib for HTTP and JSON processing
+# Try libsoup-3.0 first, fallback to libsoup-2.4
+pkg_check_modules(LIBSOUP libsoup-3.0)
+if(NOT LIBSOUP_FOUND)
+    pkg_check_modules(LIBSOUP REQUIRED libsoup-2.4)
+    message(STATUS "Using libsoup-2.4 (libsoup-3.0 not found)")
+else()
+    message(STATUS "Using libsoup-3.0")
+endif()
+
+pkg_check_modules(JSON_GLIB REQUIRED json-glib-1.0)
+
 # TensorRT - Improved detection
 find_path(TENSORRT_INCLUDE_DIR NvInfer.h
     HINTS 
@@ -134,6 +146,8 @@ target_include_directories(aiya-jetson
         ${ALL_INCLUDE_DIRS}
         ${TENSORRT_INCLUDE_DIR}
         ${GST_INCLUDE_DIRS}
+        ${LIBSOUP_INCLUDE_DIRS}
+        ${JSON_GLIB_INCLUDE_DIRS}
 )
 
 # ----------------------
@@ -142,6 +156,8 @@ target_include_directories(aiya-jetson
 target_compile_definitions(aiya-jetson
     PRIVATE
         ${GST_CFLAGS_OTHER}
+        ${LIBSOUP_CFLAGS_OTHER}
+        ${JSON_GLIB_CFLAGS_OTHER}
 )
 
 # ----------------------
@@ -152,6 +168,8 @@ target_link_libraries(aiya-jetson
         yaml-cpp
         ${OpenCV_LIBS}
         ${GST_LIBRARIES}
+        ${LIBSOUP_LIBRARIES}
+        ${JSON_GLIB_LIBRARIES}
         CUDA::cudart
         CUDA::curand
         ${TENSORRT_LIBRARY_INFER}
@@ -183,6 +201,8 @@ target_compile_options(aiya-jetson
 target_link_options(aiya-jetson
     PRIVATE
         ${GST_LDFLAGS}
+        ${LIBSOUP_LDFLAGS}
+        ${JSON_GLIB_LDFLAGS}
 )
 
 # ----------------------
@@ -201,4 +221,6 @@ message(STATUS "CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
 message(STATUS "TensorRT include: ${TENSORRT_INCLUDE_DIR}")
 message(STATUS "TensorRT libraries: ${TENSORRT_LIBRARY_INFER}")
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
+message(STATUS "libsoup version: ${LIBSOUP_VERSION}")
+message(STATUS "json-glib version: ${JSON_GLIB_VERSION}")
 message(STATUS "====================================")

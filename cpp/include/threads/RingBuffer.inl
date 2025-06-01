@@ -23,219 +23,189 @@
 #ifndef __MULTITHREAD_RINGBUFFER_INLINE_H_
 #define __MULTITHREAD_RINGBUFFER_INLINE_H_
 
-
 #include "cudaMappedMemory.h"
 #include "logging.h"
 
-
 // constructor
-RingBuffer::RingBuffer( uint32_t flags )
-{
-	mFlags = flags;
-	mBuffers = NULL;
-	mBufferSize = 0;
-	mNumBuffers = 0;
-	mReadOnce = false;
-	mLatestRead = 0;
-	mLatestWrite = 0;
+RingBuffer::RingBuffer(uint32_t flags) {
+  mFlags = flags;
+  mBuffers = NULL;
+  mBufferSize = 0;
+  mNumBuffers = 0;
+  mReadOnce = false;
+  mLatestRead = 0;
+  mLatestWrite = 0;
 }
-
 
 // destructor
-RingBuffer::~RingBuffer()
-{
-	Free();
-	
-	if( mBuffers != NULL )
-	{
-		free(mBuffers);
-		mBuffers = NULL;
-	}
-}
+RingBuffer::~RingBuffer() {
+  Free();
 
+  if (mBuffers != NULL) {
+    free(mBuffers);
+    mBuffers = NULL;
+  }
+}
 
 // Alloc
-inline bool RingBuffer::Alloc( uint32_t numBuffers, size_t size, uint32_t flags )
-{
-	if( numBuffers == mNumBuffers && size <= mBufferSize && (flags & ZeroCopy) == (mFlags & ZeroCopy) )
-		return true;
-	
-	Free();
-	
-	if( mBuffers != NULL && mNumBuffers != numBuffers )
-	{
-		free(mBuffers);
-		mBuffers = NULL;
-	}
-	
-	if( mBuffers == NULL )
-	{
-		const size_t bufferListSize = numBuffers * sizeof(void*);
-		mBuffers = (void**)malloc(bufferListSize);
-		memset(mBuffers, 0, bufferListSize);
-	}
-	
-	for( uint32_t n=0; n < numBuffers; n++ )
-	{
-		if( flags & ZeroCopy )
-		{
-			if( !cudaAllocMapped(&mBuffers[n], size) )
-			{
-				LogError(LOG_CUDA "RingBuffer -- failed to allocate zero-copy buffer of %zu bytes\n", size);
-				return false;
-			}
-		}
-		else
-		{
-			if( CUDA_FAILED(cudaMalloc(&mBuffers[n], size)) )
-			{
-				LogError(LOG_CUDA "RingBuffer -- failed to allocate CUDA buffer of %zu bytes\n", size);
-				return false;
-			}
-		}
-	}
-		
-	LogVerbose(LOG_CUDA "allocated %u ring buffers (%zu bytes each, %zu bytes total)\n", numBuffers, size, size * numBuffers);
-	
-	mNumBuffers = numBuffers;
-	mBufferSize = size;
-	mFlags     |= flags;
-	
-	return true;
-}
+inline bool RingBuffer::Alloc(uint32_t numBuffers, size_t size,
+                              uint32_t flags) {
+  if (numBuffers == mNumBuffers && size <= mBufferSize &&
+      (flags & ZeroCopy) == (mFlags & ZeroCopy))
+    return true;
 
+  Free();
+
+  if (mBuffers != NULL && mNumBuffers != numBuffers) {
+    free(mBuffers);
+    mBuffers = NULL;
+  }
+
+  if (mBuffers == NULL) {
+    const size_t bufferListSize = numBuffers * sizeof(void *);
+    mBuffers = (void **)malloc(bufferListSize);
+    memset(mBuffers, 0, bufferListSize);
+  }
+
+  for (uint32_t n = 0; n < numBuffers; n++) {
+    if (flags & ZeroCopy) {
+      if (!cudaAllocMapped(&mBuffers[n], size)) {
+        LogError(
+            LOG_CUDA
+            "RingBuffer -- failed to allocate zero-copy buffer of %zu bytes\n",
+            size);
+        return false;
+      }
+    } else {
+      if (CUDA_FAILED(cudaMalloc(&mBuffers[n], size))) {
+        LogError(LOG_CUDA
+                 "RingBuffer -- failed to allocate CUDA buffer of %zu bytes\n",
+                 size);
+        return false;
+      }
+    }
+  }
+
+  LogVerbose(LOG_CUDA
+             "allocated %u ring buffers (%zu bytes each, %zu bytes total)\n",
+             numBuffers, size, size * numBuffers);
+
+  mNumBuffers = numBuffers;
+  mBufferSize = size;
+  mFlags |= flags;
+
+  return true;
+}
 
 // Free
-inline void RingBuffer::Free()
-{
-	if( !mBuffers || mNumBuffers == 0 )
-		return;
-	
-	for( uint32_t n=0; n < mNumBuffers; n++ )
-	{
-		if( mFlags & ZeroCopy )
-			CUDA(cudaFreeHost(mBuffers[n]));
-		else
-			CUDA(cudaFree(mBuffers[n]));
-		
-		mBuffers[n] = NULL;
-	}
-}
+inline void RingBuffer::Free() {
+  if (!mBuffers || mNumBuffers == 0)
+    return;
 
+  for (uint32_t n = 0; n < mNumBuffers; n++) {
+    if (mFlags & ZeroCopy)
+      CUDA(cudaFreeHost(mBuffers[n]));
+    else
+      CUDA(cudaFree(mBuffers[n]));
+
+    mBuffers[n] = NULL;
+  }
+}
 
 // Peek
-inline void* RingBuffer::Peek( uint32_t flags )
-{
-	flags |= mFlags;
+inline void *RingBuffer::Peek(uint32_t flags) {
+  flags |= mFlags;
 
-	if( !mBuffers || mNumBuffers == 0 )
-	{
-		LogError(LOG_CUDA "RingBuffer::Peek() -- error, must call RingBuffer::Alloc() first\n");
-		return NULL;
-	}
+  if (!mBuffers || mNumBuffers == 0) {
+    LogError(
+        LOG_CUDA
+        "RingBuffer::Peek() -- error, must call RingBuffer::Alloc() first\n");
+    return NULL;
+  }
 
-	if( flags & Threaded )
-		mMutex.Lock();
+  if (flags & Threaded)
+    mMutex.Lock();
 
-	int bufferIndex = -1;
+  int bufferIndex = -1;
 
-	if( flags & Write )
-		bufferIndex = (mLatestWrite + 1) % mNumBuffers;
-	else if( flags & ReadLatest )
-		bufferIndex = mLatestWrite;
-	else if( flags & Read )
-		bufferIndex = mLatestRead;
-	
-	if( flags & Threaded )
-		mMutex.Unlock();
+  if (flags & Write)
+    bufferIndex = (mLatestWrite + 1) % mNumBuffers;
+  else if (flags & ReadLatest)
+    bufferIndex = mLatestWrite;
+  else if (flags & Read)
+    bufferIndex = mLatestRead;
 
-	if( bufferIndex < 0 )
-	{
-		LogError(LOG_CUDA "RingBuffer::Peek() -- error, invalid flags (must be Write or Read flags)\n");
-		return NULL;
-	}
+  if (flags & Threaded)
+    mMutex.Unlock();
 
-	return mBuffers[bufferIndex];
+  if (bufferIndex < 0) {
+    LogError(LOG_CUDA "RingBuffer::Peek() -- error, invalid flags (must be "
+                      "Write or Read flags)\n");
+    return NULL;
+  }
+
+  return mBuffers[bufferIndex];
 }
-
 
 // Next
-inline void* RingBuffer::Next( uint32_t flags )
-{
-	flags |= mFlags;
+inline void *RingBuffer::Next(uint32_t flags) {
+  flags |= mFlags;
 
-	if( !mBuffers || mNumBuffers == 0 )
-	{
-		LogError(LOG_CUDA "RingBuffer::Next() -- error, must call RingBuffer::Alloc() first\n");
-		return NULL;
-	}
+  if (!mBuffers || mNumBuffers == 0) {
+    LogError(
+        LOG_CUDA
+        "RingBuffer::Next() -- error, must call RingBuffer::Alloc() first\n");
+    return NULL;
+  }
 
-	if( flags & Threaded )
-		mMutex.Lock();
+  if (flags & Threaded)
+    mMutex.Lock();
 
-	int bufferIndex = -1;
+  int bufferIndex = -1;
 
-	if( flags & Write )
-	{
-		mLatestWrite = (mLatestWrite + 1) % mNumBuffers;
-		bufferIndex  = mLatestWrite;
-		mReadOnce    = false;
-	}
-	else if( (flags & ReadOnce) && mReadOnce )
-	{
-		if( flags & Threaded )
-			mMutex.Unlock();
+  if (flags & Write) {
+    mLatestWrite = (mLatestWrite + 1) % mNumBuffers;
+    bufferIndex = mLatestWrite;
+    mReadOnce = false;
+  } else if ((flags & ReadOnce) && mReadOnce) {
+    if (flags & Threaded)
+      mMutex.Unlock();
 
-		return NULL;
-	}
-	else if( flags & ReadLatest )
-	{
-		mLatestRead = mLatestWrite;
-		bufferIndex = mLatestWrite;
-		mReadOnce   = true;
-	}
-	else if( flags & Read )
-	{
-		mLatestRead = (mLatestRead + 1) % mNumBuffers;
-		bufferIndex = mLatestRead;
-		mReadOnce   = true;
-	}
-	
-	if( flags & Threaded )
-		mMutex.Unlock();
+    return NULL;
+  } else if (flags & ReadLatest) {
+    mLatestRead = mLatestWrite;
+    bufferIndex = mLatestWrite;
+    mReadOnce = true;
+  } else if (flags & Read) {
+    mLatestRead = (mLatestRead + 1) % mNumBuffers;
+    bufferIndex = mLatestRead;
+    mReadOnce = true;
+  }
 
-	if( bufferIndex < 0 )
-	{
-		LogError(LOG_CUDA "RingBuffer::Next() -- error, invalid flags (must be Write or Read flags)\n");
-		return NULL;
-	}
+  if (flags & Threaded)
+    mMutex.Unlock();
 
-	return mBuffers[bufferIndex];
+  if (bufferIndex < 0) {
+    LogError(LOG_CUDA "RingBuffer::Next() -- error, invalid flags (must be "
+                      "Write or Read flags)\n");
+    return NULL;
+  }
+
+  return mBuffers[bufferIndex];
 }
-
 
 // GetFlags
-inline uint32_t RingBuffer::GetFlags() const
-{
-	return mFlags;
-}
-	
+inline uint32_t RingBuffer::GetFlags() const { return mFlags; }
 
 // SetFlags
-inline void RingBuffer::SetFlags( uint32_t flags )
-{
-	mFlags = flags;
-}
-	
+inline void RingBuffer::SetFlags(uint32_t flags) { mFlags = flags; }
 
 // SetThreaded
-inline void RingBuffer::SetThreaded( bool threaded )
-{
-	if( threaded )
-		mFlags |= Threaded;
-	else
-		mFlags &= ~Threaded;
+inline void RingBuffer::SetThreaded(bool threaded) {
+  if (threaded)
+    mFlags |= Threaded;
+  else
+    mFlags &= ~Threaded;
 }
-
 
 #endif

@@ -23,141 +23,150 @@
 #ifndef __CUDA_DRAW_H__
 #define __CUDA_DRAW_H__
 
-
 #include "cudaUtility.h"
 #include "imageFormat.h"
 
+/**
+ * cudaDrawCircle
+ * @ingroup drawing
+ */
+cudaError_t cudaDrawCircle(void *input, void *output, size_t width,
+                           size_t height, imageFormat format, int cx, int cy,
+                           float radius, const float4 &color,
+                           cudaStream_t stream = 0);
 
 /**
  * cudaDrawCircle
  * @ingroup drawing
  */
-cudaError_t cudaDrawCircle( void* input, void* output, size_t width, size_t height, imageFormat format, 
-                            int cx, int cy, float radius, const float4& color, cudaStream_t stream=0 );
-	
-/**
- * cudaDrawCircle
- * @ingroup drawing
- */
-template<typename T> 
-cudaError_t cudaDrawCircle( T* input, T* output, size_t width, size_t height, 
-                            int cx, int cy, float radius, const float4& color,
-                            cudaStream_t stream=0 )	
-{ 
-	return cudaDrawCircle(input, output, width, height, imageFormatFromType<T>(), cx, cy, radius, color, stream); 
-}	
-
-/**
- * cudaDrawCircle (in-place)
- * @ingroup drawing
- */
-inline cudaError_t cudaDrawCircle( void* image, size_t width, size_t height, imageFormat format, 
-                                   int cx, int cy, float radius, const float4& color, cudaStream_t stream=0 )
-{
-	return cudaDrawCircle(image, image, width, height, format, cx, cy, radius, color, stream);
+template <typename T>
+cudaError_t cudaDrawCircle(T *input, T *output, size_t width, size_t height,
+                           int cx, int cy, float radius, const float4 &color,
+                           cudaStream_t stream = 0) {
+  return cudaDrawCircle(input, output, width, height, imageFormatFromType<T>(),
+                        cx, cy, radius, color, stream);
 }
 
 /**
  * cudaDrawCircle (in-place)
  * @ingroup drawing
  */
-template<typename T> 
-cudaError_t cudaDrawCircle( T* image, size_t width, size_t height, 
-                            int cx, int cy, float radius, const float4& color,
-                            cudaStream_t stream=0 )	
-{ 
-	return cudaDrawCircle(image, width, height, imageFormatFromType<T>(), cx, cy, radius, color, stream); 
+inline cudaError_t cudaDrawCircle(void *image, size_t width, size_t height,
+                                  imageFormat format, int cx, int cy,
+                                  float radius, const float4 &color,
+                                  cudaStream_t stream = 0) {
+  return cudaDrawCircle(image, image, width, height, format, cx, cy, radius,
+                        color, stream);
+}
+
+/**
+ * cudaDrawCircle (in-place)
+ * @ingroup drawing
+ */
+template <typename T>
+cudaError_t cudaDrawCircle(T *image, size_t width, size_t height, int cx,
+                           int cy, float radius, const float4 &color,
+                           cudaStream_t stream = 0) {
+  return cudaDrawCircle(image, width, height, imageFormatFromType<T>(), cx, cy,
+                        radius, color, stream);
 }
 
 /**
  * cudaDrawLine
  * @ingroup drawing
  */
-cudaError_t cudaDrawLine( void* input, void* output, size_t width, size_t height, imageFormat format, 
-                          int x1, int y1, int x2, int y2, const float4& color, float line_width=1.0,
-                          cudaStream_t stream=0 );
-	
+cudaError_t cudaDrawLine(void *input, void *output, size_t width, size_t height,
+                         imageFormat format, int x1, int y1, int x2, int y2,
+                         const float4 &color, float line_width = 1.0,
+                         cudaStream_t stream = 0);
+
 /**
  * cudaDrawLine
  * @ingroup drawing
  */
-template<typename T> 
-cudaError_t cudaDrawLine( T* input, T* output, size_t width, size_t height, 
-                          int x1, int y1, int x2, int y2, const float4& color, 
-                          float line_width=1.0, cudaStream_t stream=0 )	
-{ 
-	return cudaDrawLine(input, output, width, height, imageFormatFromType<T>(), x1, y1, x2, y2, color, line_width, stream); 
+template <typename T>
+cudaError_t cudaDrawLine(T *input, T *output, size_t width, size_t height,
+                         int x1, int y1, int x2, int y2, const float4 &color,
+                         float line_width = 1.0, cudaStream_t stream = 0) {
+  return cudaDrawLine(input, output, width, height, imageFormatFromType<T>(),
+                      x1, y1, x2, y2, color, line_width, stream);
 }
 
 /**
  * cudaDrawLine (in-place)
  * @ingroup drawing
  */
-inline cudaError_t cudaDrawLine( void* image, size_t width, size_t height, imageFormat format, 
-                                 int x1, int y1, int x2, int y2, const float4& color, 
-                                 float line_width=1.0, cudaStream_t stream=0 )
-{
-	return cudaDrawLine(image, image, width, height, format, x1, y1, x2, y2, color, line_width, stream);
-}					
-	
+inline cudaError_t cudaDrawLine(void *image, size_t width, size_t height,
+                                imageFormat format, int x1, int y1, int x2,
+                                int y2, const float4 &color,
+                                float line_width = 1.0,
+                                cudaStream_t stream = 0) {
+  return cudaDrawLine(image, image, width, height, format, x1, y1, x2, y2,
+                      color, line_width, stream);
+}
+
 /**
  * cudaDrawLine (in-place)
  * @ingroup drawing
  */
-template<typename T> 
-cudaError_t cudaDrawLine( T* image, size_t width, size_t height, 
-                          int x1, int y1, int x2, int y2, const float4& color, 
-                          float line_width=1.0, cudaStream_t stream=0 )	
-{ 
-	return cudaDrawLine(image, width, height, imageFormatFromType<T>(), x1, y1, x2, y2, color, line_width, stream); 
-}	
-
-
-/**
- * cudaDrawRect
- * @ingroup drawing
- */
-cudaError_t cudaDrawRect( void* input, void* output, size_t width, size_t height, imageFormat format, 
-                          int left, int top, int right, int bottom, const float4& color, 
-                          const float4& line_color=make_float4(0,0,0,0), float line_width=1.0f,
-                          cudaStream_t stream=0 );
+template <typename T>
+cudaError_t cudaDrawLine(T *image, size_t width, size_t height, int x1, int y1,
+                         int x2, int y2, const float4 &color,
+                         float line_width = 1.0, cudaStream_t stream = 0) {
+  return cudaDrawLine(image, width, height, imageFormatFromType<T>(), x1, y1,
+                      x2, y2, color, line_width, stream);
+}
 
 /**
  * cudaDrawRect
  * @ingroup drawing
  */
-template<typename T> 
-cudaError_t cudaDrawRect( T* input, T* output, size_t width, size_t height, 
-                          int left, int top, int right, int bottom, const float4& color,
-                          const float4& line_color=make_float4(0,0,0,0), float line_width=1.0f,
-                          cudaStream_t stream=0 )	
-{ 
-	return cudaDrawRect(input, output, width, height, imageFormatFromType<T>(), left, top, right, bottom, color, line_color, line_width, stream); 
+cudaError_t cudaDrawRect(void *input, void *output, size_t width, size_t height,
+                         imageFormat format, int left, int top, int right,
+                         int bottom, const float4 &color,
+                         const float4 &line_color = make_float4(0, 0, 0, 0),
+                         float line_width = 1.0f, cudaStream_t stream = 0);
+
+/**
+ * cudaDrawRect
+ * @ingroup drawing
+ */
+template <typename T>
+cudaError_t cudaDrawRect(T *input, T *output, size_t width, size_t height,
+                         int left, int top, int right, int bottom,
+                         const float4 &color,
+                         const float4 &line_color = make_float4(0, 0, 0, 0),
+                         float line_width = 1.0f, cudaStream_t stream = 0) {
+  return cudaDrawRect(input, output, width, height, imageFormatFromType<T>(),
+                      left, top, right, bottom, color, line_color, line_width,
+                      stream);
 }
 
 /**
  * cudaDrawRect (in-place)
  * @ingroup drawing
  */
-inline cudaError_t cudaDrawRect( void* image, size_t width, size_t height, imageFormat format, 
-                                 int left, int top, int right, int bottom, const float4& color,
-                                 const float4& line_color=make_float4(0,0,0,0), float line_width=1.0f,
-                                 cudaStream_t stream=0 )
-{
-	return cudaDrawRect(image, image, width, height, format, left, top, right, bottom, color, line_color, line_width, stream);
+inline cudaError_t
+cudaDrawRect(void *image, size_t width, size_t height, imageFormat format,
+             int left, int top, int right, int bottom, const float4 &color,
+             const float4 &line_color = make_float4(0, 0, 0, 0),
+             float line_width = 1.0f, cudaStream_t stream = 0) {
+  return cudaDrawRect(image, image, width, height, format, left, top, right,
+                      bottom, color, line_color, line_width, stream);
 }
 
 /**
  * cudaDrawRect
  * @ingroup drawing
  */
-template<typename T> 
-cudaError_t cudaDrawRect( T* image, size_t width, size_t height, 
-                          int left, int top, int right, int bottom, const float4& color,
-                          const float4& line_color=make_float4(0,0,0,0), float line_width=1.0f,
-                          cudaStream_t stream=0 )	
-{ 
-	return cudaDrawRect(image, image, width, height, imageFormatFromType<T>(), left, top, right, bottom, color, line_color, line_width, stream); 
+template <typename T>
+cudaError_t cudaDrawRect(T *image, size_t width, size_t height, int left,
+                         int top, int right, int bottom, const float4 &color,
+                         const float4 &line_color = make_float4(0, 0, 0, 0),
+                         float line_width = 1.0f, cudaStream_t stream = 0) {
+  return cudaDrawRect(image, image, width, height, imageFormatFromType<T>(),
+                      left, top, right, bottom, color, line_color, line_width,
+                      stream);
 }
 
 #endif

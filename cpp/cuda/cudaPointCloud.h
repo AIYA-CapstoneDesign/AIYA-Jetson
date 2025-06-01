@@ -23,171 +23,165 @@
 #ifndef __CUDA_POINT_CLOUD_H__
 #define __CUDA_POINT_CLOUD_H__
 
-
 #include "cudaUtility.h"
-
 
 // forward declarations
 class glBuffer;
 class glCamera;
 
-
 /**
  * CUDA-accelerated point cloud processing.
  * @ingroup pointCloud
  */
-class cudaPointCloud
-{
+class cudaPointCloud {
 public:
-	/**
-	 * Point vertex
-	 */
-	struct Vertex
-	{
-		/**
-		 * The XYZ position of the point.
-		 */
-		float3 pos;
+  /**
+   * Point vertex
+   */
+  struct Vertex {
+    /**
+     * The XYZ position of the point.
+     */
+    float3 pos;
 
-		/**
-		 * The RGB color of the point.
-		 * @note will be white if RGB data not provided
-		 */
-		uchar3 color;
+    /**
+     * The RGB color of the point.
+     * @note will be white if RGB data not provided
+     */
+    uchar3 color;
 
-		/**
-		 * The class ID of the point.
-		 * @note will be 0 if classification data no provided
-		 */
-		uint8_t classID;
+    /**
+     * The class ID of the point.
+     * @note will be 0 if classification data no provided
+     */
+    uint8_t classID;
 
-	} __attribute__((packed));
+  } __attribute__((packed));
 
-	/**
-	 * Create
-	 */
-	static cudaPointCloud* Create();
+  /**
+   * Create
+   */
+  static cudaPointCloud *Create();
 
-	/**
-	 * Destructor
-	 */
-	~cudaPointCloud();
-	
-	/**
-	 * Allocate and reserve memory for the max number of points.
-	 *
-	 * @note Memory is reserved automatically by Extract(), but
-	 *       if you know in advance the maximum number of points
-	 *       it is good practice to call Reserve() ahead of time.
-	 */
-	bool Reserve( uint32_t maxPoints );
+  /**
+   * Destructor
+   */
+  ~cudaPointCloud();
 
-	/**
-	 * Free the memory being used to store the point cloud.
-	 */
-	void Free();
+  /**
+   * Allocate and reserve memory for the max number of points.
+   *
+   * @note Memory is reserved automatically by Extract(), but
+   *       if you know in advance the maximum number of points
+   *       it is good practice to call Reserve() ahead of time.
+   */
+  bool Reserve(uint32_t maxPoints);
 
-	/**
-	 * Clear the points, but keep the memory allocated.
-	 */
-	void Clear();
+  /**
+   * Free the memory being used to store the point cloud.
+   */
+  void Free();
 
-	/**
-	 * Extract point cloud from depth map and optional RGBA image.
-	 */
-	bool Extract( float* depth, float4* rgba, uint32_t width, uint32_t height );
+  /**
+   * Clear the points, but keep the memory allocated.
+   */
+  void Clear();
 
-	/**
-	 * Extract point cloud from depth map and optional RGBA image.
-	 */
-	bool Extract( float* depth, uint32_t depth_width, uint32_t depth_height,
-			    float4* rgba, uint32_t color_width, uint32_t color_height );
+  /**
+   * Extract point cloud from depth map and optional RGBA image.
+   */
+  bool Extract(float *depth, float4 *rgba, uint32_t width, uint32_t height);
 
-	/**
-	 * Retrieve the number of points being used.
-	 */
-	inline uint32_t GetNumPoints() const		{ return mNumPoints; }
+  /**
+   * Extract point cloud from depth map and optional RGBA image.
+   */
+  bool Extract(float *depth, uint32_t depth_width, uint32_t depth_height,
+               float4 *rgba, uint32_t color_width, uint32_t color_height);
 
-	/**
-	 * Retrieve the max number of points in memory.
-	 */
-	inline uint32_t GetMaxPoints() const		{ return mMaxPoints; }
+  /**
+   * Retrieve the number of points being used.
+   */
+  inline uint32_t GetNumPoints() const { return mNumPoints; }
 
-	/**
-	 * Retrieve the size in bytes currently being used.
-	 */
-	inline size_t GetSize() const				{ return mNumPoints * sizeof(Vertex); }
+  /**
+   * Retrieve the max number of points in memory.
+   */
+  inline uint32_t GetMaxPoints() const { return mMaxPoints; }
 
-	/**
-	 * Retrieve the maximum size in bytes of the point cloud.
-	 */
-	inline size_t GetMaxSize() const			{ return mMaxPoints * sizeof(Vertex); }
+  /**
+   * Retrieve the size in bytes currently being used.
+   */
+  inline size_t GetSize() const { return mNumPoints * sizeof(Vertex); }
 
-	/**
-	 * Retrieve memory pointer to point cloud data.
-	 */
-	inline Vertex* GetData() const			{ return mPointsCPU; }
+  /**
+   * Retrieve the maximum size in bytes of the point cloud.
+   */
+  inline size_t GetMaxSize() const { return mMaxPoints * sizeof(Vertex); }
 
-	/**
-	 * Retrieve memory pointer to a specific point.
-	 */
-	inline Vertex* GetData( size_t index ) const	{ return mPointsCPU + index; }
- 
-	/**
-	 * Does the point cloud have RGB data?
-	 */
-	inline bool HasRGB() const				{ return mHasRGB; }
+  /**
+   * Retrieve memory pointer to point cloud data.
+   */
+  inline Vertex *GetData() const { return mPointsCPU; }
 
-	/**
-	 * Render the point cloud with OpenGL
-	 */
-	bool Render();
+  /**
+   * Retrieve memory pointer to a specific point.
+   */
+  inline Vertex *GetData(size_t index) const { return mPointsCPU + index; }
 
-	/**
-	 * Save point cloud to PCD file.
-	 */
-	bool Save( const char* filename );
+  /**
+   * Does the point cloud have RGB data?
+   */
+  inline bool HasRGB() const { return mHasRGB; }
 
-	/**
-	 * Set the intrinsic camera calibration.
-	 */
-	bool SetCalibration( const char* filename );
+  /**
+   * Render the point cloud with OpenGL
+   */
+  bool Render();
 
-	/**
-	 * Set the intrinsic camera calibration.
-	 */
-	void SetCalibration( const float K[3][3] );
+  /**
+   * Save point cloud to PCD file.
+   */
+  bool Save(const char *filename);
 
-	/**
-	 * Set the intrinsic camera calibration.
-	 */
-	void SetCalibration( const float2& focalLength, const float2& principalPoint );
+  /**
+   * Set the intrinsic camera calibration.
+   */
+  bool SetCalibration(const char *filename);
+
+  /**
+   * Set the intrinsic camera calibration.
+   */
+  void SetCalibration(const float K[3][3]);
+
+  /**
+   * Set the intrinsic camera calibration.
+   */
+  void SetCalibration(const float2 &focalLength, const float2 &principalPoint);
 
 protected:
-	cudaPointCloud();
+  cudaPointCloud();
 
-	bool allocBufferGL();
-	bool allocDepthResize( size_t size );
-	
-	Vertex* mPointsCPU;
-	Vertex* mPointsGPU;
+  bool allocBufferGL();
+  bool allocDepthResize(size_t size);
 
-	glBuffer* mBufferGL;
-	glCamera* mCameraGL;
+  Vertex *mPointsCPU;
+  Vertex *mPointsGPU;
 
-	uint32_t mNumPoints;
-	uint32_t mMaxPoints;
+  glBuffer *mBufferGL;
+  glCamera *mCameraGL;
 
-	float2 mFocalLength;
-	float2 mPrincipalPoint;
+  uint32_t mNumPoints;
+  uint32_t mMaxPoints;
 
-	float* mDepthResize;
-	size_t mDepthSize;
+  float2 mFocalLength;
+  float2 mPrincipalPoint;
 
-	bool mHasRGB;
-	bool mHasNewPoints;
-	bool mHasCalibration;
+  float *mDepthResize;
+  size_t mDepthSize;
+
+  bool mHasRGB;
+  bool mHasNewPoints;
+  bool mHasCalibration;
 };
 
 #endif
-

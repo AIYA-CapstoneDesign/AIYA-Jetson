@@ -19,65 +19,61 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __MULTITHREAD_PROCESS_H_
 #define __MULTITHREAD_PROCESS_H_
 
+#include <string>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string>
 
-	   
 /**
  * Static functions for retrieving information about the running process.
  * @ingroup threads
  */
-class Process
-{
+class Process {
 public:
-	/**
-	 * Get this process ID (PID)
-	 */
-	static pid_t GetID();
-	
-	/**
-	 * Get the parent's process ID
-	 */
-	static pid_t GetParentID();
-	
-	/**
-	 * Retrieve the command line of the process with the specified PID,
-	 * or of this calling process if PID is -1 (which is the default).
-	 */
-	static std::string GetCommandLine( pid_t pid=-1 );
-	
-	/**
-	 * Retrieve the absolute path of the process with the specified PID,
-	 * or of this calling process if PID is -1 (which is the default).
-	 * This path will include the process' filename.
-	 */
-	static std::string GetExecutablePath( pid_t pid=-1 );
+  /**
+   * Get this process ID (PID)
+   */
+  static pid_t GetID();
 
-	/**
-	 * Retrieve the directory that the process executable resides in.
-	 * For example, if the process executable is located at `/usr/bin/exe`,
-      * then `GetExecutableDir()` would return the path `/usr/bin`.
-	 * If the specified PID is -1, then the calling process will be used.
-	 */
-	static std::string GetExecutableDir( pid_t pid=-1 );
+  /**
+   * Get the parent's process ID
+   */
+  static pid_t GetParentID();
 
-	/**
-	 * Retrieve the current working directory of the process.
-	 * If the specified PID is -1, then the calling process will be used.
-	 */
-	static std::string GetWorkingDir( pid_t pid=-1 );
-	
-	/**
-	 * Duplicate the calling process
-	 */
-	static void Fork();
+  /**
+   * Retrieve the command line of the process with the specified PID,
+   * or of this calling process if PID is -1 (which is the default).
+   */
+  static std::string GetCommandLine(pid_t pid = -1);
+
+  /**
+   * Retrieve the absolute path of the process with the specified PID,
+   * or of this calling process if PID is -1 (which is the default).
+   * This path will include the process' filename.
+   */
+  static std::string GetExecutablePath(pid_t pid = -1);
+
+  /**
+   * Retrieve the directory that the process executable resides in.
+   * For example, if the process executable is located at `/usr/bin/exe`,
+   * then `GetExecutableDir()` would return the path `/usr/bin`.
+   * If the specified PID is -1, then the calling process will be used.
+   */
+  static std::string GetExecutableDir(pid_t pid = -1);
+
+  /**
+   * Retrieve the current working directory of the process.
+   * If the specified PID is -1, then the calling process will be used.
+   */
+  static std::string GetWorkingDir(pid_t pid = -1);
+
+  /**
+   * Duplicate the calling process
+   */
+  static void Fork();
 };
 
-
 #endif
-

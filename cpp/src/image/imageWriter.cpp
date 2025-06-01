@@ -19,7 +19,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #include "imageWriter.h"
 #include "imageIO.h"
 
@@ -28,107 +28,89 @@
 
 #include <strings.h>
 
-
 // supported image file extensions
-const char* imageWriter::SupportedExtensions[] = { "jpg", "jpeg", "png", 
-										 "tga", "targa", "bmp", 
-										 NULL };
+const char *imageWriter::SupportedExtensions[] = {"jpg",   "jpeg", "png", "tga",
+                                                  "targa", "bmp",  NULL};
 
-bool imageWriter::IsSupportedExtension( const char* ext )
-{
-	if( !ext )
-		return false;
+bool imageWriter::IsSupportedExtension(const char *ext) {
+  if (!ext)
+    return false;
 
-	uint32_t extCount = 0;
+  uint32_t extCount = 0;
 
-	while(true)
-	{
-		if( !SupportedExtensions[extCount] )
-			break;
+  while (true) {
+    if (!SupportedExtensions[extCount])
+      break;
 
-		if( strcasecmp(SupportedExtensions[extCount], ext) == 0 )
-			return true;
+    if (strcasecmp(SupportedExtensions[extCount], ext) == 0)
+      return true;
 
-		extCount++;
-	}
+    extCount++;
+  }
 
-	return false;
+  return false;
 }
 
 // constructor
-imageWriter::imageWriter( const videoOptions& options ) : videoOutput(options)
-{
-	mFileCount = 0;
-	mStreaming = true;
+imageWriter::imageWriter(const videoOptions &options) : videoOutput(options) {
+  mFileCount = 0;
+  mStreaming = true;
 
-	// replace wildcards with %i
-	const size_t wildcard = mOptions.resource.location.find("*");
-	
-	if( wildcard != std::string::npos )
-		mOptions.resource.location.replace(wildcard, 1, "%i");
+  // replace wildcards with %i
+  const size_t wildcard = mOptions.resource.location.find("*");
+
+  if (wildcard != std::string::npos)
+    mOptions.resource.location.replace(wildcard, 1, "%i");
 }
-
 
 // destructor
-imageWriter::~imageWriter()
-{
-
-}
-
+imageWriter::~imageWriter() {}
 
 // Create
-imageWriter* imageWriter::Create( const videoOptions& options )
-{
-	return new imageWriter(options);
+imageWriter *imageWriter::Create(const videoOptions &options) {
+  return new imageWriter(options);
 }
-
 
 // Create
-imageWriter* imageWriter::Create( const char* resource, const videoOptions& options )
-{
-	videoOptions opt = options;
-	opt.resource = resource;
-	return Create(opt);
+imageWriter *imageWriter::Create(const char *resource,
+                                 const videoOptions &options) {
+  videoOptions opt = options;
+  opt.resource = resource;
+  return Create(opt);
 }
-
 
 // Render
-bool imageWriter::Render( void* image, uint32_t width, uint32_t height, imageFormat format, cudaStream_t stream )
-{
-	const bool substreams_success = videoOutput::Render(image, width, height, format);
+bool imageWriter::Render(void *image, uint32_t width, uint32_t height,
+                         imageFormat format, cudaStream_t stream) {
+  const bool substreams_success =
+      videoOutput::Render(image, width, height, format);
 
-	if( mOptions.resource.location.find("%") != std::string::npos )
-	{
-		// path has a format (should be '%u' or '%i')
-		sprintf(mFileOut, mOptions.resource.location.c_str(), mFileCount);
-	}
-	else if( mOptions.resource.extension.size() == 0 )
-	{
-		// path is a dir, use default image numbering
-		sprintf(mFileOut, "%u.jpg", mFileCount);
-		const std::string path = pathJoin(mOptions.resource.location, mFileOut);
-		strcpy(mFileOut, path.c_str());
-	}
-	else
-	{
-		// path is a single file, use it as-is
-		strcpy(mFileOut, mOptions.resource.location.c_str());
-	}
+  if (mOptions.resource.location.find("%") != std::string::npos) {
+    // path has a format (should be '%u' or '%i')
+    sprintf(mFileOut, mOptions.resource.location.c_str(), mFileCount);
+  } else if (mOptions.resource.extension.size() == 0) {
+    // path is a dir, use default image numbering
+    sprintf(mFileOut, "%u.jpg", mFileCount);
+    const std::string path = pathJoin(mOptions.resource.location, mFileOut);
+    strcpy(mFileOut, path.c_str());
+  } else {
+    // path is a single file, use it as-is
+    strcpy(mFileOut, mOptions.resource.location.c_str());
+  }
 
-	//CUDA(cudaDeviceSynchronize());   // now done in saveImage()
-	
-	// save the image
-	if( !saveImage(mFileOut, image, width, height, format, IMAGE_DEFAULT_SAVE_QUALITY, stream) )
-	{
-		LogError(LOG_IMAGE "imageWriter -- failed to save '%s'\n", mFileOut);
-		return false;
-	}
+  // CUDA(cudaDeviceSynchronize());   // now done in saveImage()
 
-	mOptions.width  = width;
-	mOptions.height = height;
+  // save the image
+  if (!saveImage(mFileOut, image, width, height, format,
+                 IMAGE_DEFAULT_SAVE_QUALITY, stream)) {
+    LogError(LOG_IMAGE "imageWriter -- failed to save '%s'\n", mFileOut);
+    return false;
+  }
 
-	mFileCount++;
+  mOptions.width = width;
+  mOptions.height = height;
 
-	return substreams_success;
+  mFileCount++;
+
+  return substreams_success;
 }
-

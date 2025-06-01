@@ -19,22 +19,20 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __IMAGE_LOADER_H_
 #define __IMAGE_LOADER_H_
-
 
 #include "videoSource.h"
 
 #include <string>
 #include <vector>
 
-
 /**
  * Load an image or set of images from disk into GPU memory.
  *
  * Supported image formats for loading are JPG, PNG, TGA, BMP, GIF, PSD, HDR,
- * PIC, and PNM (PPM/PGM binary). Internally, imageLoader uses the loadImage() 
+ * PIC, and PNM (PPM/PGM binary). Internally, imageLoader uses the loadImage()
  * function to load the images, so the supported formats are the same.
  *
  * imageLoader has the ability to load an sequence of images from a directory,
@@ -49,96 +47,102 @@
  * @see videoSource
  * @ingroup image
  */
-class imageLoader : public videoSource
-{
+class imageLoader : public videoSource {
 public:
-	/**
-	 * Create an imageLoader instance from a path and optional videoOptions.
-	 */
-	static imageLoader* Create( const char* path, const videoOptions& options=videoOptions() );
-	
-	/**
-	 * Create an imageLoader instance from the provided video options.
-	 */
-	static imageLoader* Create( const videoOptions& options );
+  /**
+   * Create an imageLoader instance from a path and optional videoOptions.
+   */
+  static imageLoader *Create(const char *path,
+                             const videoOptions &options = videoOptions());
 
-	/**
-	 * Destructor
-	 */
-	virtual ~imageLoader();
+  /**
+   * Create an imageLoader instance from the provided video options.
+   */
+  static imageLoader *Create(const videoOptions &options);
 
-	/**
-	 * Load the next frame.
-	 * @see videoSource::Capture()
-	 */
-	virtual bool Capture( void** image, imageFormat format, uint64_t timeout=DEFAULT_TIMEOUT, int* status=NULL, cudaStream_t stream=0 );
+  /**
+   * Destructor
+   */
+  virtual ~imageLoader();
 
-	/**
-	 * Open the stream.
-	 * @see videoSource::Open()
-	 */
-	virtual bool Open();
+  /**
+   * Load the next frame.
+   * @see videoSource::Capture()
+   */
+  virtual bool Capture(void **image, imageFormat format,
+                       uint64_t timeout = DEFAULT_TIMEOUT, int *status = NULL,
+                       cudaStream_t stream = 0);
 
-	/**
-	 * Close the stream.
-	 * @see videoSource::Close()
-	 */
-	virtual void Close();
+  /**
+   * Open the stream.
+   * @see videoSource::Open()
+   */
+  virtual bool Open();
 
-	/**
-	 * Return true if End Of Stream (EOS) has been reached.
-	 * In the context of imageLoader, EOS means that all images
-	 * in the sequence have been loaded, and looping is either
-	 * disabled or all loops have already been run.
-	 */
-	inline bool IsEOS() const				{ return mEOS; }
+  /**
+   * Close the stream.
+   * @see videoSource::Close()
+   */
+  virtual void Close();
 
-	/**
-	 * Return the interface type (imageLoader::Type)
-	 */
-	virtual inline uint32_t GetType() const		{ return Type; }
+  /**
+   * Return true if End Of Stream (EOS) has been reached.
+   * In the context of imageLoader, EOS means that all images
+   * in the sequence have been loaded, and looping is either
+   * disabled or all loops have already been run.
+   */
+  inline bool IsEOS() const { return mEOS; }
 
-	/**
-	 * Unique type identifier of imageLoader class.
-	 */
-	static const uint32_t Type = (1 << 4);
+  /**
+   * Return the interface type (imageLoader::Type)
+   */
+  virtual inline uint32_t GetType() const { return Type; }
 
-	/**
-	 * String array of supported image file extensions, terminated
-	 * with a NULL sentinel value.  The supported extension are:
-	 *
-	 *    - JPG / JPEG
-	 *    - PNG
-	 *    - TGA / TARGA
-	 *    - BMP
-	 *    - GIF
-	 * 	 - PSD
-	 *    - HDR
-	 *    - PIC
-	 *    - PNM / PBM / PPM / PGM
-	 *
-	 * @see IsSupportedExtension() to check a string against this list.
-	 */
-	static const char* SupportedExtensions[];
+  /**
+   * Unique type identifier of imageLoader class.
+   */
+  static const uint32_t Type = (1 << 4);
 
-	/**
-	 * Return true if the extension is in the list of SupportedExtensions.
-	 * @param ext string containing the extension to be checked (should not contain leading dot)
-	 * @see SupportedExtensions for the list of supported video file extensions.
-	 */
-	static bool IsSupportedExtension( const char* ext );
+  /**
+   * String array of supported image file extensions, terminated
+   * with a NULL sentinel value.  The supported extension are:
+   *
+   *    - JPG / JPEG
+   *    - PNG
+   *    - TGA / TARGA
+   *    - BMP
+   *    - GIF
+   * 	 - PSD
+   *    - HDR
+   *    - PIC
+   *    - PNM / PBM / PPM / PGM
+   *
+   * @see IsSupportedExtension() to check a string against this list.
+   */
+  static const char *SupportedExtensions[];
+
+  /**
+   * Return true if the extension is in the list of SupportedExtensions.
+   * @param ext string containing the extension to be checked (should not
+   * contain leading dot)
+   * @see SupportedExtensions for the list of supported video file extensions.
+   */
+  static bool IsSupportedExtension(const char *ext);
 
 protected:
-	imageLoader( const videoOptions& options );
+  imageLoader(const videoOptions &options);
 
-	inline bool isLooping() const { return (mOptions.loop < 0) || ((mOptions.loop > 0) && (mLoopCount < mOptions.loop)); }
+  inline bool isLooping() const {
+    return (mOptions.loop < 0) ||
+           ((mOptions.loop > 0) && (mLoopCount < mOptions.loop));
+  }
 
-	bool mEOS;
-	size_t mLoopCount;
-	size_t mNextFile;
-	
-	std::vector<std::string> mFiles;
-	std::vector<void*> mBuffers;
+  bool mEOS;
+  size_t mLoopCount;
+  size_t mNextFile;
+
+  std::vector<std::string> mFiles;
+  std::vector<void *> mBuffers;
 };
 
 #endif

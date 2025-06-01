@@ -23,19 +23,16 @@
 #ifndef __CUDA_FILTER_MODE_H__
 #define __CUDA_FILTER_MODE_H__
 
-
 #include "cudaUtility.h"
-
 
 /**
  * Enumeration of interpolation filtering modes.
  * @see cudaFilterModeFromStr() and cudaFilterModeToStr()
  * @ingroup cudaFilter
  */
-enum cudaFilterMode
-{
-	FILTER_POINT,	 /**< Nearest-neighbor sampling */
-	FILTER_LINEAR	 /**< Bilinear filtering */
+enum cudaFilterMode {
+  FILTER_POINT, /**< Nearest-neighbor sampling */
+  FILTER_LINEAR /**< Bilinear filtering */
 };
 
 /**
@@ -43,29 +40,26 @@ enum cudaFilterMode
  * @returns The parsed cudaFilterMode, or default_value on error.
  * @ingroup cudaFilter
  */
-cudaFilterMode cudaFilterModeFromStr( const char* filter, cudaFilterMode default_value=FILTER_LINEAR );
+cudaFilterMode
+cudaFilterModeFromStr(const char *filter,
+                      cudaFilterMode default_value = FILTER_LINEAR);
 
 /**
  * Convert a cudaFilterMode enum to a string.
  * @ingroup cudaFilter
  */
-const char* cudaFilterModeToStr( cudaFilterMode filter );
-
+const char *cudaFilterModeToStr(cudaFilterMode filter);
 
 /**
  * Enumeration of image layout formats.
  * @ingroup cudaFilter
  */
-enum cudaDataFormat
-{
-	FORMAT_HWC,	/**< Height * Width * Channels (packed format) */
-	FORMAT_CHW,	/**< Channels * Width * Height (DNN format) */
-	
-	/**< Default format (HWC) */
-	FORMAT_DEFAULT = FORMAT_HWC
+enum cudaDataFormat {
+  FORMAT_HWC, /**< Height * Width * Channels (packed format) */
+  FORMAT_CHW, /**< Channels * Width * Height (DNN format) */
+
+  /**< Default format (HWC) */
+  FORMAT_DEFAULT = FORMAT_HWC
 };
 
-						
 #endif
-
-

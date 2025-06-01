@@ -19,23 +19,21 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef __IMAGE_WRITER_H_
 #define __IMAGE_WRITER_H_
 
-
 #include "videoOutput.h"
-
 
 /**
  * Save an image or set of images to disk.
  *
- * Supported image formats for saving are JPG, PNG, TGA, and BMP. Internally, 
- * imageLoader uses the saveImage() function to save the images, so the 
+ * Supported image formats for saving are JPG, PNG, TGA, and BMP. Internally,
+ * imageLoader uses the saveImage() function to save the images, so the
  * supported formats are the same.
  *
  * imageWriter has the ability to write a sequence of images to a directory,
- * for example `images/%i.jpg` (where `%i` becomes the image number), or 
+ * for example `images/%i.jpg` (where `%i` becomes the image number), or
  * just a single image with a static filename (e.g. `images/my_image.jpg`).
  * When given just the path of a directory as output, it will default to
  * incremental `%i.jpg` sequencing and save in JPG format.
@@ -47,71 +45,78 @@
  * @see videoOutput
  * @ingroup image
  */
-class imageWriter : public videoOutput
-{
+class imageWriter : public videoOutput {
 public:
-	/**
-	 * Create an imageWriter instance from a path and optional videoOptions.
-	 */
-	static imageWriter* Create( const char* path, const videoOptions& options=videoOptions() );
+  /**
+   * Create an imageWriter instance from a path and optional videoOptions.
+   */
+  static imageWriter *Create(const char *path,
+                             const videoOptions &options = videoOptions());
 
-	/**
-	 * Create an imageWriter instance from the provided video options.
-	 */
-	static imageWriter* Create( const videoOptions& options );
+  /**
+   * Create an imageWriter instance from the provided video options.
+   */
+  static imageWriter *Create(const videoOptions &options);
 
-	/**
-	 * Destructor
-	 */
-	virtual ~imageWriter();
+  /**
+   * Destructor
+   */
+  virtual ~imageWriter();
 
-	/**
-	 * Save the next frame.
-	 * @see videoOutput::Render()
-	 */
-	template<typename T> bool Render( T* image, uint32_t width, uint32_t height, cudaStream_t stream=0 )		{ return Render((void**)image, width, height, imageFormatFromType<T>(), stream); }
-	
-	/**
-	 * Save the next frame.
-	 * @see videoOutput::Render()
-	 */
-	virtual bool Render( void* image, uint32_t width, uint32_t height, imageFormat format, cudaStream_t stream=0 );
+  /**
+   * Save the next frame.
+   * @see videoOutput::Render()
+   */
+  template <typename T>
+  bool Render(T *image, uint32_t width, uint32_t height,
+              cudaStream_t stream = 0) {
+    return Render((void **)image, width, height, imageFormatFromType<T>(),
+                  stream);
+  }
 
-	/**
-	 * Return the interface type (imageWriter::Type)
-	 */
-	virtual inline uint32_t GetType() const		{ return Type; }
+  /**
+   * Save the next frame.
+   * @see videoOutput::Render()
+   */
+  virtual bool Render(void *image, uint32_t width, uint32_t height,
+                      imageFormat format, cudaStream_t stream = 0);
 
-	/**
-	 * Unique type identifier of imageWriter class.
-	 */
-	static const uint32_t Type = (1 << 5);
+  /**
+   * Return the interface type (imageWriter::Type)
+   */
+  virtual inline uint32_t GetType() const { return Type; }
 
-	/**
-	 * String array of supported image file extensions, terminated
-	 * with a NULL sentinel value.  The supported extension are:
-	 *
-	 *    - JPG / JPEG
-	 *    - PNG
-	 *    - TGA / TARGA
-	 *    - BMP
-	 *
-	 * @see IsSupportedExtension() to check a string against this list.
-	 */
-	static const char* SupportedExtensions[];
+  /**
+   * Unique type identifier of imageWriter class.
+   */
+  static const uint32_t Type = (1 << 5);
 
-	/**
-	 * Return true if the extension is in the list of SupportedExtensions.
-	 * @param ext string containing the extension to be checked (should not contain leading dot)
-	 * @see SupportedExtensions for the list of supported video file extensions.
-	 */
-	static bool IsSupportedExtension( const char* ext );
+  /**
+   * String array of supported image file extensions, terminated
+   * with a NULL sentinel value.  The supported extension are:
+   *
+   *    - JPG / JPEG
+   *    - PNG
+   *    - TGA / TARGA
+   *    - BMP
+   *
+   * @see IsSupportedExtension() to check a string against this list.
+   */
+  static const char *SupportedExtensions[];
+
+  /**
+   * Return true if the extension is in the list of SupportedExtensions.
+   * @param ext string containing the extension to be checked (should not
+   * contain leading dot)
+   * @see SupportedExtensions for the list of supported video file extensions.
+   */
+  static bool IsSupportedExtension(const char *ext);
 
 protected:
-	imageWriter( const videoOptions& options );
+  imageWriter(const videoOptions &options);
 
-	uint32_t mFileCount;
-	char     mFileOut[1024];
+  uint32_t mFileCount;
+  char mFileOut[1024];
 };
 
 #endif

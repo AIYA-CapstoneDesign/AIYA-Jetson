@@ -20,35 +20,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-
 #include "cudaFilterMode.h"
 #include <strings.h>
 
-
 // cudaFilterModeFromStr
-cudaFilterMode cudaFilterModeFromStr( const char* str, cudaFilterMode default_value )
-{
-	if( !str )
-		return default_value;
+cudaFilterMode cudaFilterModeFromStr(const char *str,
+                                     cudaFilterMode default_value) {
+  if (!str)
+    return default_value;
 
-	if( strcasecmp(str, "linear") == 0 )
-		return FILTER_LINEAR;
-	else if( strcasecmp(str, "point") == 0 || strcasecmp(str, "nearest") == 0 )
-		return FILTER_POINT;
+  if (strcasecmp(str, "linear") == 0)
+    return FILTER_LINEAR;
+  else if (strcasecmp(str, "point") == 0 || strcasecmp(str, "nearest") == 0)
+    return FILTER_POINT;
 
-	return default_value;
+  return default_value;
 }
-
 
 // cudaFilterModeToStr
-const char* cudaFilterModeToStr( cudaFilterMode filter )
-{
-	if( filter == FILTER_LINEAR )
-		return "linear";
+const char *cudaFilterModeToStr(cudaFilterMode filter) {
+  if (filter == FILTER_LINEAR)
+    return "linear";
 
-	return "point";
+  return "point";
 }
-
-
-
-

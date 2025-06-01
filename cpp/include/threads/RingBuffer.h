@@ -24,96 +24,101 @@
 #define __MULTITHREAD_RINGBUFFER_H_
 
 #include "Mutex.h"
-
+#include <cstddef>
+#include <cstdint>
 
 /**
  * Thread-safe circular ring buffer queue
  * @ingroup threads
  */
-class RingBuffer
-{
+class RingBuffer {
 public:
-	/**
-	 * Ring buffer flags
-	 */
-	enum Flags
-	{
-		Read           = (1 << 0),				/**< Read the next buffer. */
-		ReadOnce       = (1 << 1) | Read,			/**< Read the next buffer, but only if it hasn't been read before. */
-		ReadLatest     = (1 << 2) | Read,			/**< Read the latest buffer in the queue, skipping other buffers that may not have been read. */
-		ReadLatestOnce = (1 << 3) | ReadLatest,		/**< Combination of ReadOnce and ReadLatest flags. */
-		Write          = (1 << 4),				/**< Write the next buffer. */
-		Threaded       = (1 << 5),      			/**< Buffers should be thread-safe (enabled by default). */
-		ZeroCopy       = (1 << 6),				/**< Buffers should be allocated in mapped CPU/GPU zeroCopy memory (otherwise GPU only) */
-	};
-	
-	/**
-	 * Construct a new ring buffer.
-	 */
-	inline RingBuffer( uint32_t flags=Threaded );
+  /**
+   * Ring buffer flags
+   */
+  enum Flags {
+    Read = (1 << 0),            /**< Read the next buffer. */
+    ReadOnce = (1 << 1) | Read, /**< Read the next buffer, but only if it hasn't
+                                   been read before. */
+    ReadLatest =
+        (1 << 2) | Read, /**< Read the latest buffer in the queue, skipping
+                            other buffers that may not have been read. */
+    ReadLatestOnce =
+        (1 << 3) |
+        ReadLatest,   /**< Combination of ReadOnce and ReadLatest flags. */
+    Write = (1 << 4), /**< Write the next buffer. */
+    Threaded =
+        (1 << 5), /**< Buffers should be thread-safe (enabled by default). */
+    ZeroCopy = (1 << 6), /**< Buffers should be allocated in mapped CPU/GPU
+                            zeroCopy memory (otherwise GPU only) */
+  };
 
-	/**
-	 * Destructor
-	 */
-	inline ~RingBuffer();
+  /**
+   * Construct a new ring buffer.
+   */
+  inline RingBuffer(uint32_t flags = Threaded);
 
-	/**
-	 * Allocate memory for a set of buffers, where each buffer has the specified size.
-	 *
-	 * If the requested allocation is compatible with what was already allocated,
-	 * this will return `true` without performing additional allocations.
-	 * Otherwise, the previous buffers are released and new ones are allocated.
-	 *
-	 * @returns `true` if the allocations succeeded or was previously done.
-	 *          `false` if a memory allocation error occurred.
-	 */
-	inline bool Alloc( uint32_t numBuffers, size_t size, uint32_t flags=0 );
+  /**
+   * Destructor
+   */
+  inline ~RingBuffer();
 
-	/**
-	 * Free the buffer allocations.
-	 */
-	inline void Free();
+  /**
+   * Allocate memory for a set of buffers, where each buffer has the specified
+   * size.
+   *
+   * If the requested allocation is compatible with what was already allocated,
+   * this will return `true` without performing additional allocations.
+   * Otherwise, the previous buffers are released and new ones are allocated.
+   *
+   * @returns `true` if the allocations succeeded or was previously done.
+   *          `false` if a memory allocation error occurred.
+   */
+  inline bool Alloc(uint32_t numBuffers, size_t size, uint32_t flags = 0);
 
-	/**
-	 * Get the next read/write buffer without advancing the position in the queue.
-	 */
-	inline void* Peek( uint32_t flags );
+  /**
+   * Free the buffer allocations.
+   */
+  inline void Free();
 
-	/**
-	 * Get the next read/write buffer and advance the position in the queue.
-	 */
-	inline void* Next( uint32_t flags );
+  /**
+   * Get the next read/write buffer without advancing the position in the queue.
+   */
+  inline void *Peek(uint32_t flags);
 
-	/**
-	 * Get the flags of the ring buffer.
-	 */
-	inline uint32_t GetFlags() const;
-	
-	/**
-	 * Set the ring buffer's flags.
-	 */
-	inline void SetFlags( uint32_t flags );
-	
-	/**
-	 * Enable or disable multi-threading.
-	 */
-	inline void SetThreaded( bool threaded );
+  /**
+   * Get the next read/write buffer and advance the position in the queue.
+   */
+  inline void *Next(uint32_t flags);
+
+  /**
+   * Get the flags of the ring buffer.
+   */
+  inline uint32_t GetFlags() const;
+
+  /**
+   * Set the ring buffer's flags.
+   */
+  inline void SetFlags(uint32_t flags);
+
+  /**
+   * Enable or disable multi-threading.
+   */
+  inline void SetThreaded(bool threaded);
 
 protected:
+  uint32_t mNumBuffers;
+  uint32_t mLatestRead;
+  uint32_t mLatestWrite;
+  uint32_t mFlags;
 
-	uint32_t mNumBuffers;
-	uint32_t mLatestRead;
-	uint32_t mLatestWrite;
-	uint32_t mFlags;
-
-	void** mBuffers;
-	size_t mBufferSize;
-	bool   mReadOnce;
-	Mutex  mMutex;
+  void **mBuffers;
+  size_t mBufferSize;
+  bool mReadOnce;
+  Mutex mMutex;
 };
 
 // inline implementations
 #include "RingBuffer.inl"
 
 #endif
-

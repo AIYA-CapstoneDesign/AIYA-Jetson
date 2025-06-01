@@ -19,9 +19,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
- 
-#include "timespec.h"
 
+#include "timespec.h"
 
 // reference timestamp of when the process started
 const timespec __apptime_begin__ = timestamp();
