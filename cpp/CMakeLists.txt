@@ -32,6 +32,9 @@ pkg_check_modules(GST REQUIRED
     gstreamer-1.0
     gstreamer-app-1.0
     gstreamer-video-1.0
+    gstreamer-webrtc-1.0
+    gstreamer-sdp-1.0
+    gstreamer-pbutils-1.0
 )
 
 # libsoup and json-glib for HTTP and JSON processing
@@ -82,13 +85,18 @@ endif()
 # ----------------------
 # Collect Source Files
 # ----------------------
-file(GLOB_RECURSE SOURCES 
+file(GLOB_RECURSE CPP_SOURCES 
     "src/*.cpp"
+    "cuda/*.cpp"
+)
+
+file(GLOB_RECURSE CUDA_SOURCES
+    "cuda/*.cu"
     "src/*.cu"
 )
 
-# Remove empty files
-list(FILTER SOURCES EXCLUDE REGEX ".*aiya_jetson\\.cpp$")
+# Combine C++ and CUDA sources
+set(SOURCES ${CPP_SOURCES} ${CUDA_SOURCES})
 
 # Add CUDA kernels (if depth_colormap.cu exists, otherwise remove this line)
 # set(CUDA_SOURCES "depth_colormap.cu")
@@ -148,17 +156,16 @@ target_include_directories(aiya-jetson
         ${GST_INCLUDE_DIRS}
         ${LIBSOUP_INCLUDE_DIRS}
         ${JSON_GLIB_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIRS}
+        ${X11_INCLUDE_DIR}
+        ${GLEW_INCLUDE_DIRS}
 )
 
 # ----------------------
 # Compile Definitions
 # ----------------------
-target_compile_definitions(aiya-jetson
-    PRIVATE
-        ${GST_CFLAGS_OTHER}
-        ${LIBSOUP_CFLAGS_OTHER}
-        ${JSON_GLIB_CFLAGS_OTHER}
-)
+# Remove problematic compile definitions that contain compiler flags
+# target_compile_definitions will be handled through target_compile_options instead
 
 # ----------------------
 # Link Libraries
@@ -170,10 +177,25 @@ target_link_libraries(aiya-jetson
         ${GST_LIBRARIES}
         ${LIBSOUP_LIBRARIES}
         ${JSON_GLIB_LIBRARIES}
-        CUDA::cudart
-        CUDA::curand
         ${TENSORRT_LIBRARY_INFER}
         ${TENSORRT_LIBRARY_INFER_PLUGIN}
+        CUDA::cudart
+        CUDA::curand
+        CUDA::nppc
+        CUDA::nppig
+        CUDA::nppicc
+        CUDA::nppidei
+        CUDA::nppif
+        CUDA::nppim
+        CUDA::nppist
+        CUDA::nppisu
+        CUDA::nppitc
+        OpenGL::GL
+        OpenGL::GLU
+        ${GLU_LIBRARY}
+        GLEW::GLEW
+        ${X11_LIBRARIES}
+        X11
 )
 
 # ----------------------
@@ -185,6 +207,14 @@ target_compile_options(aiya-jetson
             -Wall 
             -Wextra 
             -Wpedantic
+            -Wno-overflow
+            -Wno-sign-compare
+            -Wno-unused-parameter
+            -Wno-unused-variable
+            -Wno-comment
+            -Wno-variadic-macros
+            -Wno-switch
+            -pthread
             -O3
             -DNDEBUG
         >
@@ -224,3 +254,15 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "libsoup version: ${LIBSOUP_VERSION}")
 message(STATUS "json-glib version: ${JSON_GLIB_VERSION}")
 message(STATUS "====================================")
+
+# OpenGL, X11, GLU, GLEW
+find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(glfw3 QUIET)
+
+# Check for GLU
+find_library(GLU_LIBRARY GLU REQUIRED)
+if(NOT GLU_LIBRARY)
+    message(FATAL_ERROR "GLU library not found")
+endif()
