@@ -77,8 +77,17 @@ find_library(TENSORRT_LIBRARY_INFER_PLUGIN nvinfer_plugin
     PATH_SUFFIXES lib lib64
 )
 
+find_library(TENSORRT_LIBRARY_ONNX_PARSER nvonnxparser
+    HINTS 
+        ENV TENSORRT_ROOT
+        /usr/lib/x86_64-linux-gnu
+        /usr/local/cuda/lib64
+        /opt/tensorrt/lib
+    PATH_SUFFIXES lib lib64
+)
+
 # Verify TensorRT was found
-if(NOT TENSORRT_INCLUDE_DIR OR NOT TENSORRT_LIBRARY_INFER OR NOT TENSORRT_LIBRARY_INFER_PLUGIN)
+if(NOT TENSORRT_INCLUDE_DIR OR NOT TENSORRT_LIBRARY_INFER OR NOT TENSORRT_LIBRARY_INFER_PLUGIN OR NOT TENSORRT_LIBRARY_ONNX_PARSER)
     message(FATAL_ERROR "TensorRT not found. Please install TensorRT or set TENSORRT_ROOT environment variable.")
 endif()
 
@@ -90,6 +99,13 @@ file(GLOB_RECURSE CPP_SOURCES
     "cuda/*.cpp"
 )
 
+foreach(SRC ${CPP_SOURCES})
+    string(FIND "${SRC}" "/build/" FOUND_INDEX)
+    if(NOT ${FOUND_INDEX} EQUAL -1)
+        list(REMOVE_ITEM CPP_SOURCES ${SRC})
+    endif()
+endforeach()
+
 file(GLOB_RECURSE CUDA_SOURCES
     "cuda/*.cu"
     "src/*.cu"
@@ -97,6 +113,12 @@ file(GLOB_RECURSE CUDA_SOURCES
 
 # Combine C++ and CUDA sources
 set(SOURCES ${CPP_SOURCES} ${CUDA_SOURCES})
+
+# Remove separated WebRTC Server source file
+set(EXCLUDED_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/network/webrtc-server/webrtc-server.cpp"
+)
+list(REMOVE_ITEM SOURCES ${EXCLUDED_SOURCES})
 
 # Add CUDA kernels (if depth_colormap.cu exists, otherwise remove this line)
 # set(CUDA_SOURCES "depth_colormap.cu")
@@ -146,11 +168,19 @@ foreach(BASE_DIR ${BASE_INCLUDE_DIRS})
     endif()
 endforeach()
 
+list(REMOVE_ITEM ALL_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/network/webrtc-server)
+
+message(STATUS "ALL_INCLUDE_DIRS:")
+foreach(INC ${ALL_INCLUDE_DIRS})
+    message(STATUS " - ${INC}")
+endforeach()
+
 # Remove duplicates and set include directories
 list(REMOVE_DUPLICATES ALL_INCLUDE_DIRS)
 
 target_include_directories(aiya-jetson
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${ALL_INCLUDE_DIRS}
         ${TENSORRT_INCLUDE_DIR}
         ${GST_INCLUDE_DIRS}
@@ -179,6 +209,7 @@ target_link_libraries(aiya-jetson
         ${JSON_GLIB_LIBRARIES}
         ${TENSORRT_LIBRARY_INFER}
         ${TENSORRT_LIBRARY_INFER_PLUGIN}
+        ${TENSORRT_LIBRARY_ONNX_PARSER}
         CUDA::cudart
         CUDA::curand
         CUDA::nppc
