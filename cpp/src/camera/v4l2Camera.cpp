@@ -37,8 +37,8 @@
 
 #define REQUESTED_RINGBUFFERS 4
 
-// ioctl
-static int xioctl(int fd, int request, void *arg) {
+// ioctl - fixed to handle V4L2 ioctl commands properly
+static int xioctl(int fd, unsigned long request, void *arg) {
   int status;
   do {
     status = ioctl(fd, request, arg);

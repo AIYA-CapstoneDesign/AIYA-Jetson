@@ -23,20 +23,18 @@
 #include "gstEncoder.h"
 #include "gstWebRTC.h"
 
-#include "RTSPServer.h"
+// #include "RTSPServer.h"  // RTSP functionality disabled
 #include "WebRTCServer.h"
 
 #include "filesystem.h"
 #include "logging.h"
 #include "timespec.h"
 
-
 #include "cudaColorspace.h"
 
 #define GST_USE_UNSTABLE_API
 #include <gst/app/gstappsrc.h>
 #include <gst/webrtc/webrtc.h>
-
 
 #include <sstream>
 #include <string.h>
@@ -72,7 +70,7 @@ gstEncoder::gstEncoder(const videoOptions &options) : videoOutput(options) {
   mBus = NULL;
   mBufferCaps = NULL;
   mPipeline = NULL;
-  mRTSPServer = NULL;
+  // mRTSPServer = NULL;  // RTSP functionality disabled
   mWebRTCServer = NULL;
   mNeedData = false;
 
@@ -83,10 +81,12 @@ gstEncoder::gstEncoder(const videoOptions &options) : videoOutput(options) {
 gstEncoder::~gstEncoder() {
   Close();
 
+  /*
   if (mRTSPServer != NULL) {
     mRTSPServer->Release();
     mRTSPServer = NULL;
   }
+  */  // RTSP functionality disabled
 
   if (mWebRTCServer != NULL) {
     mWebRTCServer->Release();
@@ -232,12 +232,15 @@ bool gstEncoder::init() {
 
   // create servers for RTSP/WebRTC streams
   if (mOptions.resource.protocol == "rtsp") {
-    mRTSPServer = RTSPServer::Create(mOptions.resource.port);
+    LogError(LOG_GSTREAMER
+             "gstEncoder -- RTSP functionality is disabled in this build\n");
+    return false;
+    // mRTSPServer = RTSPServer::Create(mOptions.resource.port);
 
-    if (!mRTSPServer)
-      return false;
+    // if (!mRTSPServer)
+    //   return false;
 
-    mRTSPServer->AddRoute(mOptions.resource.path.c_str(), mPipeline);
+    // mRTSPServer->AddRoute(mOptions.resource.path.c_str(), mPipeline);
   } else if (mOptions.resource.protocol == "webrtc") {
     mWebRTCServer = WebRTCServer::Create(
         mOptions.resource.port, mOptions.stunServer.c_str(),
@@ -849,12 +852,24 @@ void gstEncoder::onWebsocketMessage(WebRTCPeer *peer, const char *message,
     gst_bin_add_many(GST_BIN(encoder->mPipeline), peer_context->queue,
                      peer_context->webrtcbin, NULL);
 
+    // set transciever to send-only mode first (before linking pads)
+    GstWebRTCRTPTransceiver *transceiver = NULL;
+    g_signal_emit_by_name(peer_context->webrtcbin, "add-transceiver",
+                          GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_SENDONLY, NULL,
+                          &transceiver);
+    g_assert_nonnull(transceiver);
+
     // link the queue to webrtc bin
     GstPad *srcpad = gst_element_get_static_pad(peer_context->queue, "src");
     g_assert_nonnull(srcpad);
     GstPad *sinkpad =
-        gst_element_get_request_pad(peer_context->webrtcbin, "sink_%u");
-    g_assert_nonnull(sinkpad);
+        gst_element_get_request_pad(peer_context->webrtcbin, "sink_0");
+    if (!sinkpad) {
+      LogError(LOG_WEBRTC "Failed to get sink pad from webrtcbin for peer %u\n",
+               peer->ID);
+      gst_object_unref(srcpad);
+      return;
+    }
     int ret = gst_pad_link(srcpad, sinkpad);
     g_assert_cmpint(ret, ==, GST_PAD_LINK_OK);
     gst_object_unref(srcpad);
@@ -873,19 +888,6 @@ void gstEncoder::onWebsocketMessage(WebRTCPeer *peer, const char *message,
     g_assert_cmpint(ret, ==, GST_PAD_LINK_OK);
     gst_object_unref(srcpad);
     gst_object_unref(sinkpad);
-
-    // set transciever to send-only mode
-    GArray *transceivers = NULL;
-
-    g_signal_emit_by_name(peer_context->webrtcbin, "get-transceivers",
-                          &transceivers);
-    g_assert(transceivers != NULL && transceivers->len > 0);
-
-    GstWebRTCRTPTransceiver *transceiver =
-        g_array_index(transceivers, GstWebRTCRTPTransceiver *, 0);
-    g_object_set(transceiver, "direction",
-                 GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_SENDONLY, NULL);
-    g_array_unref(transceivers);
 
     // subscribe to callbacks
     g_signal_connect(peer_context->webrtcbin, "on-negotiation-needed",

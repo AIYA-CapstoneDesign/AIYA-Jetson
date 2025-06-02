@@ -28,7 +28,7 @@
 #include "videoOutput.h"
 
 // Forward declarations
-class RTSPServer;
+// class RTSPServer;  // RTSP functionality disabled
 class WebRTCServer;
 struct WebRTCPeer;
 
@@ -165,7 +165,6 @@ protected:
 
   RingBuffer mBufferYUV;
 
-  RTSPServer *mRTSPServer;
   WebRTCServer *mWebRTCServer;
 };
 

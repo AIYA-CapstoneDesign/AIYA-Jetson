@@ -32,7 +32,7 @@
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 
-#include "../cpp/image/stb/stb_truetype.h"
+#include "image/stb/stb_truetype.h"
 
 //#define DEBUG_FONT
 

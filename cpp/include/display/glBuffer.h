@@ -23,6 +23,8 @@
 #ifndef __GL_BUFFER_H__
 #define __GL_BUFFER_H__
 
+#include <GL/glew.h>
+
 #include "cudaUtility.h"
 #include "cuda_gl_interop.h"
 

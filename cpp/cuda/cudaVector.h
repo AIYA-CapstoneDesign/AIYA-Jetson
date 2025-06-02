@@ -37,12 +37,12 @@
 
 ///@{
 
-// get base type (uint8 or float) from vector
+// get base type (uchar or float) from vector
 template <class T> struct cudaVectorTypeInfo;
 
-template <> struct cudaVectorTypeInfo<uchar> { typedef uint8_t Base; };
-template <> struct cudaVectorTypeInfo<uchar3> { typedef uint8_t Base; };
-template <> struct cudaVectorTypeInfo<uchar4> { typedef uint8_t Base; };
+template <> struct cudaVectorTypeInfo<uchar> { typedef uchar Base; };
+template <> struct cudaVectorTypeInfo<uchar3> { typedef uchar Base; };
+template <> struct cudaVectorTypeInfo<uchar4> { typedef uchar Base; };
 
 template <> struct cudaVectorTypeInfo<float> { typedef float Base; };
 template <> struct cudaVectorTypeInfo<float3> { typedef float Base; };
@@ -63,18 +63,15 @@ inline __host__ __device__ T make_vec(typename cudaVectorTypeInfo<T>::Base x,
 }
 
 template <>
-inline __host__ __device__ uchar make_vec(uint8_t x, uint8_t y, uint8_t z,
-                                          uint8_t w) {
+inline __host__ __device__ uchar make_vec(uchar x, uchar y, uchar z, uchar w) {
   return x;
 }
 template <>
-inline __host__ __device__ uchar3 make_vec(uint8_t x, uint8_t y, uint8_t z,
-                                           uint8_t w) {
+inline __host__ __device__ uchar3 make_vec(uchar x, uchar y, uchar z, uchar w) {
   return make_uchar3(x, y, z);
 }
 template <>
-inline __host__ __device__ uchar4 make_vec(uint8_t x, uint8_t y, uint8_t z,
-                                           uint8_t w) {
+inline __host__ __device__ uchar4 make_vec(uchar x, uchar y, uchar z, uchar w) {
   return make_uchar4(x, y, z, w);
 }
 
@@ -175,11 +172,11 @@ alpha(T vec, typename cudaVectorTypeInfo<T>::Base default_alpha = 255) {
 }
 
 template <>
-inline __host__ __device__ uint8_t alpha(uchar3 vec, uint8_t default_alpha) {
+inline __host__ __device__ uchar alpha(uchar3 vec, uchar default_alpha) {
   return default_alpha;
 }
 template <>
-inline __host__ __device__ uint8_t alpha(uchar4 vec, uint8_t default_alpha) {
+inline __host__ __device__ uchar alpha(uchar4 vec, uchar default_alpha) {
   return vec.w;
 }
 
