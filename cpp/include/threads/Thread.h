@@ -24,7 +24,7 @@
 #define __MULTITHREAD_H_
 
 #include <pthread.h>
-
+#include <atomic>
 /**
  * Function pointer typedef representing a thread's main entry point.
  * A user-defined parameter is passed through such that the user can
@@ -145,7 +145,7 @@ protected:
   static void *DefaultEntry(void *param);
 
   pthread_t mThreadID;
-  bool mThreadStarted;
+  std::atomic<bool> mThreadStarted;
 };
 
 #endif
